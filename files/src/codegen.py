@@ -889,7 +889,7 @@ class CodeGen:
         if c:
             args_c = ", ".join(self._gen_expr(a) for a in node.args)
             if fn in VOID_BUILTINS:
-                return f"(k_Ladd({args_c}), kv_void())"
+                return f"({c}({args_c}), kv_void())"
             return f"{c}({args_c})"
 
         # Special cases
@@ -948,7 +948,9 @@ class CodeGen:
             cls_name = self._class_types[node.obj.name]
         
         if cls_name:
-            return f"kmethod_{cls_name}_{node.name}({obj_code}, {args_c})"
+            if args_c:
+                return f"kmethod_{cls_name}_{node.name}({obj_code}, {args_c})"
+            return f"kmethod_{cls_name}_{node.name}({obj_code})"
         else:
             # Dynamic dispatch: look up method in object's dict at runtime
             # For now, emit a wrapped dynamic call placeholder

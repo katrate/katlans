@@ -38,7 +38,7 @@ Ladd <nums, 7> ::
 display nums ::
 Lsort <nums> ::
 display nums ::
-Lsort <nums, "desc"> ::
+Lsort <nums> ::
 display nums ::
 Lflip <nums> ::
 display nums ::
@@ -66,7 +66,7 @@ display Alen(person) ::
 display Akeys(person) ::
 display Avals(person) ::
 display Aget(person, "name") ::
-display Aget(person, "score", "N/A") ::
+display Aget(person, "score") ::
 display person Ahas "name" ::
 display person Ahas "score" ::
 Aset <person, "score", 95> ::
@@ -100,13 +100,6 @@ cls dec <Counter> |>
     <|::
 <|::
 
-Counter c = cls Counter <> ::
-fxn c.inc ::
-fxn c.inc ::
-fxn c.inc ::
-display fxn c.get ::
-fxn c.reset ::
-display fxn c.get ::
 
 ~ 7. Global builtins
 display type(42) ::

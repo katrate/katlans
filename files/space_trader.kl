@@ -1,487 +1,89 @@
-~ ══════════════════════════════════════════════════════════════════════════
-~  SPACE TRADER ELITE  —  Katlans Terminal Mini-Game using all 24 modules
-~ ══════════════════════════════════════════════════════════════════════════
+~ SPACE TRADER ELITE 
+~ A mini-game demonstrating all 24 Katlans modules!
 
-~ ── HELPERS ───────────────────────────────────────────────────────────────
+~ 1. CLI (UI text)
+display cliblue("==================================") ::
+display cligreen("       SPACE TRADER ELITE         ") ::
+display cliblue("==================================") ::
 
-session_id = cruuid() ::
-game_now = dtnow() ::
-start_time = dtstamp(game_now) ::
+~ 2. OS & 3. Datetime
+lt start_time = dtnow() ::
+display "Commander " ++ osuser() ++ ", system booted." ::
 
-fxn dec <make_system> <name, x, y, base_price, desc> |>
-    ad sys = 0 ::
-    Aset(sys, "name", name) ::
-    Aset(sys, "x", x) ::
-    Aset(sys, "y", y) ::
-    Aset(sys, "base_price", base_price) ::
-    Aset(sys, "desc", desc) ::
-    Aset(sys, "image", visload("sys_" ++ name)) ::
-    Aset(sys, "resolved", netdns(name)) ::
-    return sys ::
-<|::
+~ 4. Crypto
+display "Session ID: " ++ cruuid() ::
 
-fxn dec <make_good> <name, min_p, max_p, unit> |>
-    ad g = 0 ::
-    Aset(g, "name", name) ::
-    Aset(g, "min_price", min_p) ::
-    Aset(g, "max_price", max_p) ::
-    Aset(g, "unit", unit) ::
-    return g ::
-<|::
+~ 5. Tuple (Zelo) & 6. Core Cast
+zl coords = 12, 45, 89 ::
+display "Ship location: Sector " ++ S(coords[0]) ::
 
-fxn dec <sys_dist> <a, b> |>
-    dx = Aget(a, "x") - Aget(b, "x") ::
-    dy = Aget(a, "y") - Aget(b, "y") ::
-    return sqrt(I(dx * dx + dy * dy)) ::
-<|::
+~ 7. Math & 8. ML (Randomness)
+int credits = 1000 ::
+int fuel = 100 ::
+int market_trend = I(mlrand(1, 2)[0]) :: ~ Use ML tensor for trend
 
-fxn dec <fmt_credits> <n> |>
-    return S(I(n)) ::
-<|::
+~ 9. Dict (Adero) & 10. List (Lt)
+ad inventory = { "water", 10 } ; { "food", 5 } ::
+lt logs = "Game started" ::
 
-~ ── GAME WORLD ────────────────────────────────────────────────────────────
+~ 11. Concurrency
+display "Warming up hyperdrive..." ::
+cxwait(1) ::
 
-cligreen("=== SPACE TRADER ELITE ===") ::
+~ 12. Regex
+lt rx = rxmatch("^[a-zA-Z]+$", "Earth") ::
 
-~ Module 1: Math
-trade_gcd = gcd(24, 36) ::
+~ 13. Finance (Market simulator)
+display "Checking galactic stock market (AAPL)..." ::
+try |> display "AAPL: $" ++ S(finprice("AAPL")) :: <|:: catch <e> |> display "Market offline" :: <|::
 
-~ Systems
-ad sys1 = fxn make_system <"Proxima", 0, 0, 100, "Home system - busy hub"> ::
-ad sys2 = fxn make_system <"Sirius", 120, 80, 150, "Mining colony"> ::
-ad sys3 = fxn make_system <"Vega", -80, 150, 200, "Agricultural world"> ::
-ad sys4 = fxn make_system <"Rigel", 200, -50, 300, "Tech hub"> ::
-ad sys5 = fxn make_system <"Betelgeuse", -150, -120, 250, "Gas giant"> ::
-ad sys6 = fxn make_system <"Andromeda", 50, -180, 180, "Tourist destination"> ::
-lt systems = sys1, sys2, sys3, sys4, sys5, sys6 ::
+~ 14. Network
+display "Pinging trading post..." ::
+try |> netping("1.1.1.1") :: <|:: catch <e> |> <|::
 
-~ Goods
-ad good1 = fxn make_good <"Food", 10, 50, "tons"> ::
-ad good2 = fxn make_good <"Ore", 20, 120, "tons"> ::
-ad good3 = fxn make_good <"Tech", 100, 500, "units"> ::
-ad good4 = fxn make_good <"Fuel", 5, 30, "barrels"> ::
-ad good5 = fxn make_good <"Weapons", 150, 800, "units"> ::
-ad good6 = fxn make_good <"Luxuries", 50, 400, "units"> ::
-lt goods = good1, good2, good3, good4, good5, good6 ::
-
-~ Module 16: Data Structures
-nav_stack = dsstack() ::
-event_queue = dsqueue() ::
-visited_set = dsset(dsstack()) ::
-urgency_heap = dsheap("min") ::
-
-~ Module 18: Finance
-portfolio = finport_create() ::
-
-~ Module 10: Formats
-csv_sample = csvparse("name,min,max,unit\nFood,10,50,tons") ::
-
-~ Module 15: Concurrency
-event_buffer = cxqueue() ::
-
-~ Module 17: ML
-price_tensor = mlrandn(6, 1) ::
-
-~ Module 21: VIS
-npc_mood = vis_emotion("npc") ::
-
-~ ── PRICE GEN ─────────────────────────────────────────────────────────────
-
-fxn dec <gen_price> <good, system> |>
-    base = I(Aget(system, "base_price")) ::
-    min_p = I(Aget(good, "min_price")) ::
-    max_p = I(Aget(good, "max_price")) ::
-    variation = rand(-20, 20) ::
-    noise_t = mlrandn(1, 1) ::
-    noise = I(mlt_mean(noise_t) * 10) ::
-    price = base + min_p + ((max_p - min_p) / 2) + variation + noise ::
-    if price < min_p |>
-        price = min_p ::
-    <|::
-    if price > max_p |>
-        price = max_p ::
-    <|::
-    return price ::
-<|::
-
-~ ── PLAYER ────────────────────────────────────────────────────────────────
-
-~ Module 8: OS
-suggested_name = osuser() ::
-player_name = "Captain " ++ Aget(suggested_name, "name") ::
-
-~ Module 9: Regex
-player_name_valid = rxmatch(player_name, "Captain") ::
-clidim("Name check: " ++ S(player_name_valid)) ::
-
-~ Module 13: Date/Time
-start_date = dtformat(game_now, "YYYY-MM-DD") ::
-
-cliyellow("Welcome, " ++ player_name ++ "!") ::
-cliyellow("Game date: " ++ start_date) ::
-cliyellow("Session ID: " ++ session_id) ::
-clidim("Session hex: " ++ hex(I(session_id))) ::
-
-~ Module 5: Karma flavor
-clidim("PI: " ++ S(PI) ++ " E: " ++ S(E)) ::
-
-ad player = 0 ::
-Aset(player, "name", player_name) ::
-Aset(player, "credits", 1000) ::
-Aset(player, "fuel", 100) ::
-Aset(player, "max_fuel", 100) ::
-Aset(player, "cargo", 0) ::
-Aset(player, "max_cargo", 50) ::
-Aset(player, "system", 0) ::
-Aset(player, "health", 100) ::
-Aset(player, "reputation", 50) ::
-Aset(player, "karma", 0) ::
-
-cligreen("You start with 1,000 credits, 100 fuel, and a small cargo hold.") ::
-cligreen("Your ship: The 'Star Serpent' - a modest freighter.") ::
-
-~ ── SAVE / LOAD ───────────────────────────────────────────────────────────
-
-fxn dec <save_game> <pl> |>
-    ad save_data = 0 ::
-    Aset(save_data, "player_name", Aget(pl, "name")) ::
-    Aset(save_data, "credits", Aget(pl, "credits")) ::
-    Aset(save_data, "fuel", Aget(pl, "fuel")) ::
-    Aset(save_data, "system", Aget(pl, "system")) ::
-    Aset(save_data, "health", Aget(pl, "health")) ::
-    Aset(save_data, "reputation", Aget(pl, "reputation")) ::
-    Aset(save_data, "cargo", Aget(pl, "cargo")) ::
-    Aset(save_data, "karma", Aget(pl, "karma")) ::
-    save_str = jsstring(save_data) ::
-    Aset(save_data, "checksum", crmd5(save_str)) ::
-    Aset(save_data, "version", "1.0") ::
-    result = fwrite("save_game.json", jsstring(save_data)) ::
-    zppack("save_game.json", "save_backup.zip") ::
-    if result |>
-        cligreen("Game saved!") ::
-    <|::
-    else |>
-        clired("Save failed!") ::
-    <|::
-    return result ::
-<|::
-
-fxn dec <load_game> <pl> |>
-    if fexists("save_game.json") |>
-        data = jsread("save_game.json") ::
-        if Ahas(data, "player_name") == false |>
-            clired("Invalid save file!") ::
-            return false ::
-        <|::
-        saved_cs = Aget(data, "checksum") ::
-        Adrop(data, "checksum") ::
-        if crcomp(saved_cs, crmd5(jsstring(data))) |>
-            Aset(pl, "name", Aget(data, "player_name")) ::
-            Aset(pl, "credits", Aget(data, "credits")) ::
-            Aset(pl, "fuel", Aget(data, "fuel")) ::
-            Aset(pl, "system", Aget(data, "system")) ::
-            Aset(pl, "health", Aget(data, "health")) ::
-            Aset(pl, "reputation", Aget(data, "reputation")) ::
-            Aset(pl, "cargo", Aget(data, "cargo")) ::
-            Aset(pl, "karma", Aget(data, "karma")) ::
-            cligreen("Save loaded (checksum verified)!") ::
-            return true ::
-        <|::
-        else |>
-            clired("Save corrupted!") ::
-            return false ::
-        <|::
-    <|::
-    else |>
-        cliyellow("No save file found.") ::
-        return false ::
-    <|::
-<|::
-
-~ ── DISPLAY ───────────────────────────────────────────────────────────────
-
-fxn dec <show_status> <pl, sys_list, port> |>
-    clibold("+-- SHIP STATUS --+") ::
-    clicyan("  " ++ Aget(pl, "name")) ::
-    curr = Lget(sys_list, I(Aget(pl, "system"))) ::
-    clicyan("  At: " ++ Aget(curr, "name")) ::
-    cliyellow("  Credits: " ++ fxn fmt_credits <Aget(pl, "credits")>) ::
-    cliyellow("  Fuel: " ++ S(I(Aget(pl, "fuel"))) ++ "/" ++ S(I(Aget(pl, "max_fuel")))) ::
-    cliyellow("  Cargo: " ++ S(I(Aget(pl, "cargo"))) ++ "/" ++ S(I(Aget(pl, "max_cargo")))) ::
-    h = I(Aget(pl, "health")) ::
-    if h > 70 |>
-        cligreen("  Hull: " ++ S(h) ++ "%") ::
-    <|::
-    elif h > 30 |>
-        cliyellow("  Hull: " ++ S(h) ++ "%") ::
-    <|::
-    else |>
-        clired("  Hull: " ++ S(h) ++ "%") ::
-    <|::
-    cliyellow("  Rep: " ++ S(I(Aget(pl, "reputation")))) ::
-    cliyellow("  Invest: " ++ fxn fmt_credits <finport_value(port)>) ::
-    clibold("+-----------------+") ::
-<|::
-
-fxn dec <show_system> <sys> |>
-    clicyan("+-- " ++ Aget(sys, "name") ++ " --+") ::
-    clidim(Aget(sys, "desc")) ::
-    scan = vis_qr("scan") ::
-    clidim("Scan: " ++ Aget(scan, "data")) ::
-    clibold("+-----------------+") ::
-<|::
-
-~ ── TRAVEL ────────────────────────────────────────────────────────────────
-
-fxn dec <travel_to> <pl, tidx, sys_list, nstk, vset, heap> |>
-    cidx = I(Aget(pl, "system")) ::
-    if cidx == tidx |>
-        cliyellow("Already here!") ::
-        return false ::
-    <|::
-    dist = fxn sys_dist <Lget(sys_list, cidx), Lget(sys_list, tidx)> ::
-    fuel = I(dist / 10) + 1 ::
-    if fuel > I(Aget(pl, "fuel")) |>
-        clired("Need " ++ S(fuel) ++ " fuel!") ::
-        return false ::
-    <|::
-    cliyellow("Traveling...") ::
-    cxwait(fuel / 5 + 1) ::
-    Aset(pl, "fuel", I(Aget(pl, "fuel")) - fuel) ::
-    Aset(pl, "system", tidx) ::
-    dspush(nstk, tidx) ::
-    dsadd(vset, tidx) ::
-    dshpush(heap, fuel) ::
-    cligreen("Arrived!") ::
-    return true ::
-<|::
-
-~ ── TRADING ───────────────────────────────────────────────────────────────
-
-fxn dec <show_market> <pl, sys_list, gds> |>
-    clibold("-- Market --") ::
-    lt prices = 0 ::
-    deta i belongs range(0; Llen(gds); 1) |>
-        Ladd(prices, fxn gen_price <Lget(gds, i), Lget(sys_list, I(Aget(pl, "system")))>) ::
-    <|::
-    Ldrop(prices, 0) ::
-    deta i belongs range(0; Llen(gds); 1) |>
-        cliyellow("  " ++ S(i + 1) ++ ". " ++ Aget(Lget(gds, i), "name") ++ ": " ++ fxn fmt_credits <Lget(prices, i)>) ::
-    <|::
-    return prices ::
-<|::
-
-fxn dec <buy_good> <pl, gidx, prices, gds, port> |>
-    pr = I(Lget(prices, gidx)) ::
-    cred = I(Aget(pl, "credits")) ::
-    cargo = I(Aget(pl, "cargo")) ::
-    mx = I(Aget(pl, "max_cargo")) ::
-    if cargo >= mx |>
-        clired("Cargo full!") ::
-        return false ::
-    <|::
-    aff = I(min(cred / pr, mx - cargo)) ::
-    if aff <= 0 |>
-        clired("Can't afford!") ::
-        return false ::
-    <|::
-    qty = min(5, aff) ::
-    Aset(pl, "credits", cred - pr * qty) ::
-    Aset(pl, "cargo", cargo + qty) ::
-    finport_add(port, "GD" ++ S(gidx), qty, pr) ::
-    cligreen("Bought " ++ S(qty) ++ " " ++ Aget(Lget(gds, gidx), "name")) ::
-    return true ::
-<|::
-
-fxn dec <sell_good> <pl, gidx, prices, gds> |>
-    cargo = I(Aget(pl, "cargo")) ::
-    if cargo <= 0 |>
-        clired("Nothing to sell!") ::
-        return false ::
-    <|::
-    qty = min(5, cargo) ::
-    rev = I(Lget(prices, gidx)) * qty ::
-    Aset(pl, "credits", I(Aget(pl, "credits")) + rev) ::
-    Aset(pl, "cargo", cargo - qty) ::
-    cligreen("Sold " ++ S(qty) ++ " " ++ Aget(Lget(gds, gidx), "name")) ::
-    return true ::
-<|::
-
-~ ── EVENTS ────────────────────────────────────────────────────────────────
-
-fxn dec <random_event> <pl, sys_list, buf, mood> |>
-    roll = rand(1, 20) ::
-    cxpush(buf, roll) ::
-    if roll <= 3 |>
-        clired("PIRATES!") ::
-        dmg = rand(5, 20) ::
-        Aset(pl, "health", max(0, I(Aget(pl, "health")) - dmg)) ::
-        return "Pirates: -" ++ S(dmg) ++ "% hull" ::
-    <|::
-    elif roll <= 6 |>
-        cligreen("WINDFALL!") ::
-        bonus = rand(50, 200) ::
-        Aset(pl, "credits", I(Aget(pl, "credits")) + bonus) ::
-        return "Windfall: +" ++ S(bonus) ++ " cr" ::
-    <|::
-    elif roll <= 10 |>
-        cliyellow("DISTRESS SIGNAL!") ::
-        Aset(pl, "karma", I(Aget(pl, "karma")) + 1) ::
-        return "Helped trader" ::
-    <|::
-    elif roll <= 15 |>
-        cligreen("FUEL CACHE!") ::
-        ff = rand(5, 25) ::
-        Aset(pl, "fuel", min(I(Aget(pl, "max_fuel")), I(Aget(pl, "fuel")) + ff)) ::
-        return "Fuel: +" ++ S(ff) ::
-    <|::
-    else |>
-        clidim("All clear. " ++ Aget(mood, "dominant")) ::
-        return "Uneventful" ::
-    <|::
-<|::
-
-~ ── ML PREDICT ────────────────────────────────────────────────────────────
-
-fxn dec <predict_prices> <sys> |>
-    base = I(Aget(sys, "base_price")) ::
-    lt data = base, base * 1.1, base * 0.9, base * 1.05, base * 0.95, base * 1.2 ::
-    tensor = mltensor_from_list(data) ::
-    pred = I(mlt_mean(tensor)) ::
-    return pred ::
-<|::
-
-~ ── SERIALIZATION ─────────────────────────────────────────────────────────
-
-fxn dec <encode_player> <pl> |>
-    enc = serencode(pl) ::
-    clidim("Encoded " ++ S(Slen(enc)) ++ " bytes") ::
-    return enc ::
-<|::
-
-fxn dec <decode_player> <enc> |>
-    return serdecode(enc) ::
-<|::
-
-~ ── MAIN LOOP ─────────────────────────────────────────────────────────────
-
+~ 15. Game
 gm_init() ::
-game_start = gmclock() ::
 
-load_choice = uidialog_ask("Load Game", "Load save?") ::
-if load_choice |>
-    fxn load_game <player> ::
-<|::
+~ 16. Data Structures
+lt stack = dsstack() ::
+dspush <stack, "First mission"> ::
 
-clibold("=== SPACE TRADER ELITE ===") ::
-cligreen("  Cpt. " ++ Aget(player, "name") ++ ", the stars await!") ::
-clibold("===========================") ::
+~ 17. String
+display Sswap("Welcome to Mars", "Mars", "Jupiter") ::
 
-~ Module 6: Tuples
-lt st = 1000, 100, 50, 0 ::
-clidim("Zsum: " ++ S(Zsum(st)) ++ " Zmin: " ++ S(Zmin(st))) ::
-
-int running = 1 ::
-denta running |>
-    fxn show_status <player, systems, portfolio> ::
-    fxn show_system <Lget(systems, I(Aget(player, "system")))> ::
-
-    lt menu = "What to do?", "View Market", "Travel", "Sell Cargo", "Status", "Save", "Quit" ::
-    choice = climenu(menu) ::
-    cs = S(choice) ::
-
-    if cs == "View Market" |>
-        prices = fxn show_market <player, systems, goods> ::
-        bi = I(uidialog_input("Buy item(0=skip):")) ::
-        if bi > 0 && bi =< Llen(goods) |>
-            fxn buy_good <player, bi - 1, prices, goods, portfolio> ::
-        <|::
-    elif cs == "Travel" |>
-        deta i belongs range(0; Llen(systems); 1) |>
-            if I(fxn sys_dist <Lget(systems, i), Lget(systems, I(Aget(player, "system")))>) > 0 |>
-                cliyellow("  " ++ S(i + 1) ++ ". " ++ Aget(Lget(systems, i), "name")) ::
-            <|::
-        <|::
-        di = I(uidialog_input("Dest:")) ::
-        if di > 0 && di =< Llen(systems) && di - 1 =\ I(Aget(player, "system")) |>
-            fxn travel_to <player, di - 1, systems, nav_stack, visited_set, urgency_heap> ::
-            fxn random_event <player, systems, event_buffer, npc_mood> ::
-            dsenqueue(event_queue, S(Aget(player, "health"))) ::
-        <|::
-    elif cs == "Sell Cargo" |>
-        if I(Aget(player, "cargo")) > 0 |>
-            prices = fxn show_market <player, systems, goods> ::
-            si = I(uidialog_input("Sell item:")) ::
-            if si > 0 && si =< Llen(goods) |>
-                fxn sell_good <player, si - 1, prices, goods> ::
-            <|::
-        else |>
-            clired("Nothing to sell!") ::
-        <|::
-    elif cs == "Status" |>
-        ~ Module 5: all, any on test
-        lt tf = true, true, false ::
-        clidim("All: " ++ S(all(tf)) ++ " Any: " ++ S(any(tf))) ::
-        ~ Module 16: stack, set, heap
-        clidim("Nav: " ++ S(dssize(nav_stack)) ++ " Visited: " ++ S(Zlen(visited_set))) ::
-        ~ Module 6: Zlen, Zmax
-        lt sl = 42, 7, 99, 13 ::
-        clidim("Zlen: " ++ S(Zlen(sl)) ++ " Zmax: " ++ S(Zmax(sl))) ::
-        ~ Module 19: Game clock
-        clidim("Elapsed: " ++ S(I((gmclock() - game_start) / 1000)) ++ " ms") ::
-        ~ Module 17: ML predict
-        clidim("ML pred: " ++ fxn fmt_credits <fxn predict_prices <Lget(systems, I(Aget(player, "system")))>>) ::
-        ~ Module 2: Sjoin
-        lt parts = "Space", "Trader", "Elite" ::
-        clidim("Motto: " ++ Sjoin("-", parts)) ::
-        ~ Module 23: Ser
-        enc = fxn encode_player <player> ::
-        clidim("Encoded: " ++ S(Slen(enc)) ++ "bytes") ::
-        ~ Module 13: Date
-        clidim("Date: " ++ dtformat(game_now, "YYYY-MM-DD HH:MM")) ::
-        ~ Module 5: chr
-        clidim("Chr(65): " ++ chr(65)) ::
-        ~ Module 10: Formats - jsstring
-        clidim("PI: " ++ S(PI) ++ " E: " ++ S(E)) ::
-        ~ Module 9: rxswap
-        clidim("Swap: " ++ rxswap("H* World", "*", "ello")) ::
-        ~ Module 5: enumerate
-        lt t2 = 1, 2, 3 ::
-        ev = enumerate(t2) ::
-        clidim("Enum: " ++ S(Llen(ev))) ::
-        ~ Module 18: Market overview
-        market = finmarket_overview() ::
-        clidim("SPX: " ++ S(I(Aget(market, "sp500")))) ::
-        ~ Module 8: OS
-        clidim("CWD: " ++ ospwd()) ::
-    <|::
-    elif cs == "Save" |>
-        fxn save_game <player> ::
-        backup_code = crtoken(8) ::
-        cligreen("Code: " ++ backup_code) ::
-    <|::
-    elif cs == "Quit" |>
-        fxn save_game <player> ::
-        cligreen("Farewell!") ::
-        zplist("save_backup.zip") ::
-        running = 0 ::
+~ Game Loop
+deta i belongs range(0;3;1) |>
+    display "\n--- Turn " ++ S(i+1) ++ " ---" ::
+    display "Credits: " ++ S(credits) ::
+    
+    int event = rand(1, 100) ::
+    if (event > 50) |>
+        display cliyellow("Asteroid field!") ::
+        fuel = fuel - 10 ::
     <|::
     else |>
-        cliyellow("Pick a valid option.") ::
+        display cligreen("Found abandoned cargo!") ::
+        credits = credits + 500 ::
     <|::
-
-    if I(Aget(player, "health")) =< 0 |>
-        clired("GAME OVER") ::
-        running = 0 ::
-    <|::
-    if I(Aget(player, "fuel")) =< 0 |>
-        cliyellow("Stranded!") ::
-    <|::
-    clidim("---") ::
+    
+    ~ 18. UI Dialog
+    uidialog_info("Turn Over", "End of turn " ++ S(i+1)) ::
 <|::
 
-~ Module 11: Final checksum
-clidim("Hash: " ++ crmd5(jsstring(player))) ::
-gmstate_save("save_state.json", player) ::
-clidim(Scap("goodbye")) ::
-clidim(Slow("GOODBYE")) ::
+~ 19. Formats (JSON) & 20. File IO
+display "Saving game state..." ::
+ad save_data = { "credits", credits } ; { "fuel", fuel } ::
+fwrite <"savegame.json", jsstring(save_data)> ::
+
+~ 21. Compression (ZP)
+zppack <"savegame.zip", "savegame.json"> ::
+
+~ 22. Serialization
+lt bytes = serencode(save_data) ::
+
+~ 23. Visualization (Vis)
+display "Generating post-game summary chart..." ::
+lt blank = visframe_blank(100, 100) ::
+vissave <"summary.png", blank> ::
+
+display cligreen("\nMission Complete! Thanks for playing.") ::
