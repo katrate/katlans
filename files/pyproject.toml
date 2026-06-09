@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "katlans"
+version = "0.1.0"
+description = "The Katlans Programming Language — compile .kl to C and beyond"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Katlans Team"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Compilers",
+    "Intended Audience :: Developers",
+]
+
+[project.scripts]
+katlans = "katlans:main"
+
+[tool.setuptools.packages.find]
+include = ["katlans*"]
+
+[tool.setuptools.package-data]
+katlans = ["runtime/*.h"]

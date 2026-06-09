@@ -1,0 +1,105 @@
+~ Phase 3 Test
+
+~ 1. File I/O
+display "=== File I/O ===" ::
+fwrite <"test_out.txt", "Hello Katlans!"> ::
+display fexists("test_out.txt") ::
+display fsize("test_out.txt") ::
+fadd <"test_out.txt", " More"> ::
+display fread("test_out.txt") ::
+fmkdir <"test_dir"> ::
+display fisdir("test_dir") ::
+frmdir <"test_dir"> ::
+fdel <"test_out.txt"> ::
+display fexists("test_out.txt") ::
+display fbase("/home/user/file.txt") ::
+display fext("file.txt") ::
+
+~ 2. OS Operations
+display "=== OS ===" ::
+sys = ossys() ::
+display sys.os ::
+display sys.arch ::
+ram = osram() ::
+display ram.total ::
+up = osuptime() ::
+display up.total ::
+usr = osuser() ::
+display usr.name ::
+display ospwd() ::
+
+~ 3. Regex
+display "=== Regex ===" ::
+display rxmatch("hello123", "[a-z]+") ::
+display rxmatch("12345", "[a-z]+") ::
+display rxfind("one two three", "[a-z]+") ::
+display rxswap("hello world", "world", "Katlans") ::
+display rxchop("a1b2c3", "[0-9]") ::
+display rxcount("aababab", "ab") ::
+display rxgroups("2026-05-08", "([0-9]+)-([0-9]+)-([0-9]+)") ::
+
+~ 4. JSON
+display "=== JSON ===" ::
+ad cfg = {host,"localhost"}; {port,"8080"} ::
+jswrite <"cfg.json", cfg> ::
+ad loaded = jsread("cfg.json") ::
+display Aget(loaded, "host") ::
+display Aget(loaded, "port") ::
+display jsstring(loaded) ::
+fdel <"cfg.json"> ::
+
+~ 5. Cryptography
+display "=== Crypto ===" ::
+display crmd5("hello") ::
+display crsha("hello", 256) ::
+enc = crb64enc("Hello Katlans") ::
+display enc ::
+display crb64dec(enc) ::
+display cruuid() ::
+display crtoken(16) ::
+cipher = crenc("secret", "mykey", "xor") ::
+display crdec(cipher, "mykey", "xor") ::
+display crcomp(crmd5("hello"), crmd5("hello")) ::
+display crcomp(crmd5("hello"), crmd5("world")) ::
+
+~ 6. CLI Tools
+display "=== CLI ===" ::
+clired <"Error text"> ::
+cligreen <"Success text"> ::
+cliyellow <"Warning text"> ::
+clibold <"Bold text"> ::
+
+~ 7. Testing Framework
+display "=== Tests ===" ::
+
+test dec <mathTest> |>
+    testcheck <2 + 2 == 4> ::
+    testcheck <10 - 3 == 7> ::
+    testcheck <2 ^ 8 == 256> ::
+    testcheck <10 /// 3 == 1> ::
+<|::
+
+test dec <stringTest> |>
+    testcheck <Slen("hello") == 5> ::
+    testcheck <Scap("hello") == "HELLO"> ::
+    testcheck <"hello" Speeks "ell"> ::
+    testcheck <"hello" Sfront "hel"> ::
+<|::
+
+test dec <listTest> |>
+    lt nums = 1, 2, 3, 4, 5 ::
+    testcheck <Llen(nums) == 5> ::
+    testcheck <Lmax(nums) == 5> ::
+    testcheck <Lsum(nums) == 15> ::
+    testcheck <nums Lhas 3> ::
+<|::
+
+test dec <cryptoTest> |>
+    testcheck <Slen(crmd5("hello")) == 32> ::
+    testcheck <Slen(crsha("hello", 256)) == 64> ::
+    testcheck <crb64dec(crb64enc("hello")) == "hello"> ::
+    testcheck <crcomp(crmd5("x"), crmd5("x"))> ::
+<|::
+
+testrun() ::
+display "Phase 3 complete!" ::

@@ -1,0 +1,126 @@
+~ ── Phase 2 Test ─────────────────────────────────────────────
+
+~ 1. Template strings
+name = "Alice" ::
+int age = 30 ::
+display "Hello {name}, you are {age} years old!" ::
+display "2 + 2 = {2 + 2}" ::
+display "Upper: {Scap(name)}" ::
+
+~ 2. String methods
+x = "Hello World" ::
+display Scap(x) ::
+display Slow(x) ::
+display Stitle(x) ::
+display Slen(x) ::
+display Sfind(x, "World") ::
+display Scount(x, "l") ::
+display Sswap(x, "World", "Katlans") ::
+display Snip("  hi there  ") ::
+display Schop(x, " ") ::
+display Sjoin(", ", Schop(x, " ")) ::
+display Sfront(x, "Hello") ::
+display Sback(x, "World") ::
+display x Speeks "World" ::
+display Sisalpha("hello") ::
+display Sisdigit("123") ::
+display Sisdigit("abc") ::
+display Sremprefix(x, "Hello ") ::
+display Sremsuffix(x, " World") ::
+display Szfill("42", 6) ::
+display x[0;5] ::
+display x[6] ::
+
+~ 3. List methods
+lt nums = 5, 3, 8, 1, 9, 2 ::
+display Llen(nums) ::
+Ladd <nums, 7> ::
+display nums ::
+Lsort <nums> ::
+display nums ::
+Lsort <nums, "desc"> ::
+display nums ::
+Lflip <nums> ::
+display nums ::
+display Lmax(nums) ::
+display Lmin(nums) ::
+display Lsum(nums) ::
+display Lindex(nums, 8) ::
+display Lcount(nums, 3) ::
+display nums Lhas 8 ::
+display nums Lhas 99 ::
+display nums[0] ::
+display nums[1;4] ::
+Ldrop <nums, 1> ::
+display nums ::
+lt copy = Lcopy(nums) ::
+Ladd <copy, 100> ::
+display nums ::
+display copy ::
+lt dupes = 1, 2, 2, 3, 3, 3 ::
+display Lunique(dupes) ::
+
+~ 4. Dict methods
+ad person = {name,"Bob"}; {age,25}; {city,"Delhi"} ::
+display Alen(person) ::
+display Akeys(person) ::
+display Avals(person) ::
+display Aget(person, "name") ::
+display Aget(person, "score", "N/A") ::
+display person Ahas "name" ::
+display person Ahas "score" ::
+Aset <person, "score", 95> ::
+display person ::
+Adrop <person, "city"> ::
+display person ::
+
+~ 5. Tuple methods
+zl coords = 10, 20, 30 ::
+display Zlen(coords) ::
+display Zmax(coords) ::
+display Zmin(coords) ::
+display Zsum(coords) ::
+display coords Zhas 20 ::
+display Zindex(coords, 20) ::
+
+~ 6. Classes with self & methods
+cls dec <Counter> |>
+    int count = 0 ::
+
+    fxn dec <inc> |>
+        self.count = self.count + 1 ::
+    <|::
+
+    fxn dec <get> |>
+        return self.count ::
+    <|::
+
+    fxn dec <reset> |>
+        self.count = 0 ::
+    <|::
+<|::
+
+Counter c = cls Counter <> ::
+fxn c.inc ::
+fxn c.inc ::
+fxn c.inc ::
+display fxn c.get ::
+fxn c.reset ::
+display fxn c.get ::
+
+~ 7. Global builtins
+display type(42) ::
+display type("hi") ::
+display type(3.14) ::
+display chr(65) ::
+display ord("A") ::
+display hex(255) ::
+display bin(10) ::
+lt bools = true, true, false ::
+display all(bools) ::
+display any(bools) ::
+display fact(5) ::
+display gcd(12, 8) ::
+display lcm(4, 6) ::
+
+display "Phase 2 complete!" ::

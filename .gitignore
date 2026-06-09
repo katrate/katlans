@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Katlans  —  .gitignore
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Build artifacts
+build/
+dist/
+*.spec
+katlans.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+
+# Test outputs
+*.c        # generated C files (reproducible from .kl)
+test_out.txt
+test_dir/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

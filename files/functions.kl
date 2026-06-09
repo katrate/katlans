@@ -1,0 +1,44 @@
+~ Functions in Katlans
+
+~ Basic function
+fxn dec <greet> <name> |>
+    greeting = "Hello, " ++ name ++ "!" ::
+    display greeting ::
+<|::
+
+fxn greet <"World"> ::
+fxn greet <"Katlans"> ::
+
+~ Function with return value
+fxn dec <add> <a, b> |>
+    return a + b ::
+<|::
+
+int result = fxn add <10, 32> ::
+display result ::
+
+~ Recursive function
+fxn dec <factorial> <n> |>
+    if n =< 1 |>
+        return 1 ::
+    <|::
+    return n * fxn factorial <n - 1> ::
+<|::
+
+int f = fxn factorial <5> ::
+display "5! =" ::
+display f ::
+
+~ Function with multiple operations
+fxn dec <square> <x> |>
+    return x * x ::
+<|::
+
+fxn dec <cube> <x> |>
+    return x * x * x ::
+<|::
+
+display "3 squared:" ::
+display fxn square <3> ::
+display "3 cubed:" ::
+display fxn cube <3> ::

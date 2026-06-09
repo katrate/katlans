@@ -1,0 +1,38 @@
+~ Control flow examples
+
+~ If / elif / else
+int score = 85 ::
+
+if score => 90 |>
+    display "Grade: A" ::
+<|::
+elif score => 80 |>
+    display "Grade: B" ::
+<|::
+elif score => 70 |>
+    display "Grade: C" ::
+<|::
+else |>
+    display "Grade: F" ::
+<|::
+
+~ For range loop
+display "Counting 1 to 5:" ::
+deta i belongs range(1;6;1) |>
+    display i ::
+<|::
+
+~ While loop
+display "Countdown:" ::
+int n = 3 ::
+denta n > 0 |>
+    display n ::
+    n = n - 1 ::
+<|::
+
+~ For each over list
+lt fruits = "apple", "banana", "mango" ::
+display "Fruits:" ::
+deta fruit belongs in fruits |>
+    display fruit ::
+<|::

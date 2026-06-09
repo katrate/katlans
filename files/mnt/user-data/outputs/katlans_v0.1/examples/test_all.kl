@@ -1,0 +1,104 @@
+~ ── Katlans Foundation Test ──────────────────────────────────
+
+~ 1. Types & variables
+int age    = 25 ::
+flt price  = 9.99 ::
+name       = "Katlans" ::
+flag       = true ::
+
+display age ::
+display price ::
+display name ::
+display flag ::
+
+~ 2. Arithmetic
+display 10 + 3 ::
+display 10 - 3 ::
+display 10 * 3 ::
+display 10 / 4 ::
+display 10 // 3 ::
+display 10 /// 3 ::
+display 2 ^ 8 ::
+display 20 % 100 ::
+
+~ 3. String concat
+display "Hello " ++ "World" ::
+
+~ 4. Comparisons & logic
+display 5 > 3 ::
+display 5 == 5 ::
+display 5 =\ 4 ::
+display true && false ::
+display true &+ false ::
+display !& false ::
+
+~ 5. List
+lt nums = 1, 2, 3, 4, 5 ::
+display nums ::
+deta n belongs in nums |>
+    display n ::
+<|::
+
+~ 6. Dict
+ad person = {name,"Alice"}; {age,30} ::
+display person ::
+
+~ 7. Math built-ins
+display sqrt(16) ::
+display abs(-42) ::
+display floor(3.9) ::
+display ceil(3.1) ::
+
+~ 8. If / elif / else
+int score = 72 ::
+if score => 90 |>
+    display "A" ::
+<|::
+elif score => 80 |>
+    display "B" ::
+<|::
+elif score => 70 |>
+    display "C" ::
+<|::
+else |>
+    display "F" ::
+<|::
+
+~ 9. For range
+deta i belongs range(1;4;1) |>
+    display i ::
+<|::
+
+~ 10. While
+int x = 3 ::
+denta x > 0 |>
+    display x ::
+    x = x - 1 ::
+<|::
+
+~ 11. Functions
+fxn dec <double> <n> |>
+    return n * 2 ::
+<|::
+
+display fxn double <7> ::
+
+~ 12. Recursion
+fxn dec <fib> <n> |>
+    if n =< 1 |>
+        return n ::
+    <|::
+    return fxn fib <n - 1> + fxn fib <n - 2> ::
+<|::
+
+display fxn fib <10> ::
+
+~ 13. Try / catch
+try |>
+    display "safe block" ::
+<|::
+catch <err> |>
+    display err ::
+<|::
+
+display "All tests passed!" ::

@@ -1,0 +1,20 @@
+~ Hello World in Katlans
+
+display "Hello, World!" ::
+
+~ Variables
+int x = 42 ::
+flt pi = 3.14159 ::
+name = "Katlans" ::
+
+display x ::
+display pi ::
+display name ::
+
+~ String concat
+greeting = "Hello, " ++ name ++ "!" ::
+display greeting ::
+
+~ Math
+int result = x + 8 ::
+display result ::

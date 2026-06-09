@@ -1,0 +1,137 @@
+~ Phase 4 Test
+
+~ 1. DateTime
+display "=== DateTime ===" ::
+now = dtnow() ::
+display now ::
+display now.year ::
+display now.month ::
+display now.day ::
+display dtdate() ::
+display dttime() ::
+display dtformat(now, "DD-MM-YYYY") ::
+display dtstamp(now) ::
+tomorrow = dtadd(now, 1, "day") ::
+display tomorrow ::
+yesterday = dtsub(now, 1, "day") ::
+display yesterday ::
+int diff = dtdiff(yesterday, tomorrow, "day") ::
+display diff ::
+int secs = dtconv(2, "hr", "sec") ::
+display secs ::
+display dtleap(2024) ::
+display dtleap(2023) ::
+display dtbefore(yesterday, tomorrow) ::
+display dtafter(tomorrow, yesterday) ::
+dtwait <1> ::
+display "Waited 1 second" ::
+
+~ 2. Networking
+display "=== Networking ===" ::
+ip = netdns("google.com") ::
+display ip ::
+up = netping("google.com") ::
+display up ::
+resp = netget("http://example.com") ::
+display resp.status ::
+display resp.ok ::
+resp2 = netget("http://example.com/notfound404xyz") ::
+display resp2.status ::
+display resp2.ok ::
+
+~ 3. Concurrency
+display "=== Concurrency ===" ::
+q = cxqueue() ::
+cxpush <q, "task1"> ::
+cxpush <q, "task2"> ::
+cxpush <q, "task3"> ::
+display cxpop(q) ::
+display cxpop(q) ::
+display Llen(q) ::
+int counter = cxatom(0) ::
+cxinc <counter> ::
+cxinc <counter> ::
+cxinc <counter> ::
+display counter ::
+cxdec <counter> ::
+display counter ::
+lk = cxlock() ::
+cxacquire <lk> ::
+display lk ::
+cxrelease <lk> ::
+display lk ::
+f = cxfuture(42) ::
+display cxresolve(f) ::
+ch = cxchan() ::
+cxsend <ch, "hello channel"> ::
+msg = cxrecv(ch) ::
+display msg ::
+
+~ 4. Data Structures
+display "=== Data Structures ===" ::
+sk = dsstack() ::
+dspush <sk, 10> ::
+dspush <sk, 20> ::
+dspush <sk, 30> ::
+display dspeek(sk) ::
+display dspop(sk) ::
+display dssize(sk) ::
+
+dq2 = dsqueue() ::
+dsenqueue <dq2, "first"> ::
+dsenqueue <dq2, "second"> ::
+dsenqueue <dq2, "third"> ::
+display dsdequeue(dq2) ::
+display dsdequeue(dq2) ::
+
+lt items = 1, 2, 3, 3, 2, 1 ::
+st = dsset(items) ::
+display st ::
+dsadd <st, 4> ::
+display st ::
+display dshas(st, 3) ::
+display dshas(st, 99) ::
+st2 = dsset(4, 5, 6) ::
+display dsunion(st, st2) ::
+display dsinter(st, st2) ::
+display dsdiff(st, st2) ::
+
+hp = dsheap("min") ::
+dshpush <hp, 5> ::
+dshpush <hp, 1> ::
+dshpush <hp, 8> ::
+dshpush <hp, 3> ::
+display dshpop(hp) ::
+display dshpop(hp) ::
+
+dq = dsdeque() ::
+dqdpushl <dq, "left1"> ::
+dqdpushr <dq, "right1"> ::
+dqdpushl <dq, "left2"> ::
+display dqdpopl(dq) ::
+display dqdpopr(dq) ::
+
+mt = dsmat(3, 3) ::
+dsmatset <mt, 0, 0, 1> ::
+dsmatset <mt, 1, 1, 5> ::
+dsmatset <mt, 2, 2, 9> ::
+display dsmatget(mt, 1, 1) ::
+dsmatprint <mt> ::
+mt2 = dsmattrans(mt) ::
+display dsmatget(mt2, 0, 1) ::
+
+tr = dstree() ::
+dstadd <tr, "root", ""> ::
+dstadd <tr, "child1", "root"> ::
+dstadd <tr, "child2", "root"> ::
+display dstchildren(tr, "root") ::
+display dstparent(tr, "child1") ::
+
+gr = dsgraph() ::
+dsgedge <gr, "A", "B"> ::
+dsgedge <gr, "B", "C"> ::
+display dsgnbr(gr, "A") ::
+display dsgpath(gr, "A", "C") ::
+display dsgpath(gr, "C", "A") ::
+
+display "Phase 4 complete!" ::

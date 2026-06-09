@@ -1,0 +1,459 @@
+~ Phase 5 Test — Power Modules
+~ Tests: ML, Finance, Game, UI, VIS
+
+display "=== Phase 5: Power Modules Test ===" ::
+
+~ ─────────────────────────────────────────────────────────────────
+~ 1. ML Module — Neural Networks & Tensors
+~ ─────────────────────────────────────────────────────────────────
+display "=== ML Module ===" ::
+
+~ Tensor creation
+t = mlzeros(3, 4) ::
+display "zeros tensor created" ::
+t2 = mlones(2, 3) ::
+display "ones tensor created" ::
+t3 = mlrand(3, 3) ::
+display "random tensor created" ::
+t4 = mlrandn(2, 4) ::
+display "randn tensor created" ::
+
+~ Tensor operations from list
+lt data = 1, 2, 3, 4, 5 ::
+t5 = mltensor_from_list(data) ::
+shape = mltensor_shape(t5) ::
+display "tensor shape:" ::
+display shape ::
+
+~ Tensor math
+display "tensor sum:" :: display mlt_sum(t2) ::
+display "tensor mean:" :: display mlt_mean(t2) ::
+display "tensor max:" :: display mlt_max(t5) ::
+display "tensor min:" :: display mlt_min(t5) ::
+
+~ Tensor element-wise ops
+ta = mlones(2, 2) ::
+tb = mlones(2, 2) ::
+tc = mlt_add(ta, tb) ::
+display "tensor add done" ::
+td = mlt_sub(ta, tb) ::
+display "tensor sub done" ::
+te = mlt_mul(ta, tb) ::
+display "tensor mul done" ::
+
+~ Activation functions
+tf = mlt_relu(ta) ::
+display "relu done" ::
+tg = mlt_sigmoid(ta) ::
+display "sigmoid done" ::
+th = mlt_tanh(ta) ::
+display "tanh done" ::
+ti = mlt_softmax(ta) ::
+display "softmax done" ::
+
+~ Transpose & flatten
+tj = mlt_transpose(ta) ::
+display "transpose done" ::
+tk = mlt_flatten(ta) ::
+display "flatten done" ::
+
+~ tolist & get/set
+pixels = mlt_tolist(ta) ::
+display pixels ::
+val = mlt_get(ta, 0) ::
+display val ::
+mlt_set <ta, 0, 42> ::
+display "set done" ::
+
+~ Build a sequential model
+model = mlmodel_seq() ::
+mlmodel_add_linear <model, 4, 8> ::
+mlmodel_add_relu <model> ::
+mlmodel_add_linear <model, 8, 3> ::
+mlmodel_add_softmax <model> ::
+display "model built" ::
+
+~ Forward pass
+input_data = mlzeros(1, 4) ::
+output = mlmodel_forward(model, input_data) ::
+display "forward pass done" ::
+
+~ Loss functions
+target = mlzeros(1, 3) ::
+loss = mlloss_mse(output, target) ::
+display "MSE:" :: display loss ::
+loss2 = mlloss_mae(output, target) ::
+display "MAE:" :: display loss2 ::
+
+mlt_print <ta> ::
+display "ML module works" ::
+
+~ ─────────────────────────────────────────────────────────────────
+~ 2. Finance Module
+~ ─────────────────────────────────────────────────────────────────
+display "=== Finance Module ===" ::
+
+~ Ticker & Price
+tkr = finticker("AAPL") ::
+px = finprice(tkr) ::
+display px.current ::
+display px.change ::
+display px.volume ::
+display px.ok ::
+
+~ Historical data
+hist = finhist(tkr, "1mo") ::
+display "history bars:" :: display len(hist) ::
+
+~ Company info
+info = fininfo(tkr) ::
+display info.name ::
+display info.beta ::
+
+~ Technical Indicators
+sma = finind_sma(hist, 10) ::
+display "SMA computed" ::
+ema = finind_ema(hist, 10) ::
+display "EMA computed" ::
+rsi = finind_rsi(hist, 14) ::
+display "RSI computed" ::
+obv = finind_obv(hist) ::
+display "OBV computed" ::
+vwap2 = finind_vwap(hist) ::
+display "VWAP computed" ::
+
+~ MACD
+macd_result = finind_macd(hist, 12, 26, 9) ::
+display "MACD computed" ::
+
+~ Bollinger Bands
+bb = finind_bollinger(hist, 20, 2) ::
+display "Bollinger Bands computed" ::
+
+~ Charting
+finchart_line <hist, "close", "AAPL Price"> ::
+finchart_candle <hist, "AAPL"> ::
+
+~ Portfolio
+port = finport_create() ::
+finport_add <port, "AAPL", 10, 185> ::
+finport_add <port, "GOOGL", 5, 175> ::
+finport_value(port) ::
+finport_pnl(port) ::
+finchart_portfolio <port> ::
+display "portfolio works" ::
+
+~ Backtesting
+bt = finback_create(hist) ::
+finback_cash <bt, 50000> ::
+finback_commission <bt, 0.001> ::
+finback_buy <bt, 100> ::
+finback_sell <bt, 100> ::
+bt_result = finback_run(bt) ::
+display bt_result.total_return ::
+display bt_result.trades ::
+
+~ Market data
+mkt = finmarket_overview() ::
+display mkt.sp500 ::
+display mkt.nasdaq ::
+
+~ Forex
+eur = finforex("USD", "EUR") ::
+display eur.rate ::
+
+~ Crypto
+coins = fincrypto_top(5) ::
+display len(coins) ::
+
+~ Pattern detection
+dojis = finpat_doji(hist) ::
+hammers = finpat_hammer(hist) ::
+display "patterns found:" :: display len(dojis) :: display len(hammers) ::
+
+display "Finance module works" ::
+
+~ ─────────────────────────────────────────────────────────────────
+~ 3. Game Module
+~ ─────────────────────────────────────────────────────────────────
+display "=== Game Module ===" ::
+
+gm_init() ::
+display "game initialized" ::
+running = gm_running() ::
+display running ::
+
+~ Sprites
+player = gmsprite("@") ::
+gmsp_pos <player, 10, 10> ::
+gmsp_vel <player, 1, 0> ::
+gmsp_accel <player, 0, 0.5> ::
+display "sprite created" ::
+
+player2 = gmsprite("E") ::
+gmsp_pos <player2, 20, 15> ::
+gmsp_visible <player2, true> ::
+
+~ Sprite groups
+group = gmgroup() ::
+gmgroup_add <group, player> ::
+gmgroup_add <group, player2> ::
+count = gmgroup_count(group) ::
+display "group count:" :: display count ::
+pos = gmsp_rect(player) ::
+display pos.x ::
+
+~ Collision detection
+col = gmcol_rect(player, player2) ::
+display "collision:" :: display col ::
+dist = gmcol_dist(player, player2) ::
+display "distance:" :: display dist ::
+
+~ Clock
+clk = gmclock() ::
+display "clock tick:" :: display clk ::
+
+~ Sound
+snd = gmsound("beep.wav") ::
+gmsound_play <snd> ::
+gmsound_vol <snd, 0.8> ::
+gmmusic_play() ::
+
+~ Font
+fnt = gmfont("default", 16) ::
+txt = gmfont_render(fnt, "Hello", "white") ::
+
+~ State save/load
+gmstate_exists("save.json") ::
+
+gm_stop() ::
+display "Game module works" ::
+
+~ ─────────────────────────────────────────────────────────────────
+~ 4. UI Module
+~ ─────────────────────────────────────────────────────────────────
+display "=== UI Module ===" ::
+
+win = uiwin("Test Window", 60, 20) ::
+uiwin_title <win, "Katlans UI Test"> ::
+uiwin_center <win> ::
+display "window created" ::
+
+~ Widgets
+lbl = uilabel(win, "Hello, Katlans!") ::
+uilabel_text <lbl, "Updated Label"> ::
+btn = uibtn(win, "Click Me") ::
+entry = uientry(win) ::
+uientry_set <entry, "default text"> ::
+txt2 = uientry_get(entry) ::
+display txt2 ::
+uientry_clear <entry> ::
+display "entry cleared" ::
+
+~ Multi-line text
+txtbox = uitext(win, 40, 5) ::
+uitext_insert <txtbox, "Line 1\n"> ::
+uitext_insert <txtbox, "Line 2\n"> ::
+box_text = uitext_get(txtbox) ::
+display box_text ::
+uitext_clear <txtbox> ::
+
+~ Checkbox
+chk = uicheck(win, "Enable") ::
+checked = uicheck_get(chk) ::
+display checked ::
+uicheck_set <chk, true> ::
+uicheck_toggle <chk> ::
+
+~ Progress bar
+bar = uiprog(win, 0, 100) ::
+uiprog_set <bar, 50> ::
+
+~ Slider
+sld = uislider(win, 0, 100) ::
+uislider_set <sld, 42> ::
+slider_val = uislider_get(sld) ::
+display slider_val ::
+
+~ Layout
+uigrid <lbl, 0, 0> ::
+uiplace <btn, 10, 5> ::
+uipack <win> ::
+
+~ Dialogs
+uidialog_info <"Info", "Test message"> ::
+answer = uidialog_ask("Confirm", "Continue?") ::
+display answer ::
+username = uidialog_input("Enter name:") ::
+display username ::
+
+~ Clipboard
+uiclip_set <"copied text"> ::
+clip = uiclip_get() ::
+display clip ::
+
+~ Variable handling
+v = uivar_int(42) ::
+uivar_set <v, 100> ::
+v2 = uivar_get(v) ::
+
+~ Screen info
+sw = uiinfo_screenwidth(win) ::
+sh = uiinfo_screenheight(win) ::
+display sw :: display sh ::
+
+uiwin_run <win> ::
+uiwin_close <win> ::
+display "UI module works" ::
+
+~ ─────────────────────────────────────────────────────────────────
+~ 5. VIS Module — Computer Vision
+~ ─────────────────────────────────────────────────────────────────
+display "=== VIS Module ===" ::
+
+~ Camera
+cam = viscam("0") ::
+viscam_open <cam> ::
+display viscam_width(cam) ::
+display viscam_height(cam) ::
+cams = viscam_list() ::
+display len(cams) ::
+viscam_close <cam> ::
+
+~ Frame operations
+frame = visframe(cam) ::
+frame_w = visframe_size(frame) ::
+display frame_w ::
+blank = visframe_blank(640, 480) ::
+display "blank frame created" ::
+
+~ Load/save
+img = visload("test.jpg") ::
+visframe_show <frame, "Preview"> ::
+visframe_gray <frame> ::
+visframe_rgb <frame> ::
+visframe_blur <frame, 5> ::
+visframe_threshold <frame, 127, "binary"> ::
+visframe_equalize <frame> ::
+visframe_flip <frame, "h"> ::
+visframe_rotate <frame, 90> ::
+visframe_resize <frame, 320, 240> ::
+visframe_crop <frame, 10, 10, 100, 100> ::
+
+~ Contours
+contours = visframe_contours(frame) ::
+display len(contours) ::
+
+~ Edge detection
+visframe_edges_canny <frame, 100, 200> ::
+
+~ Histogram
+hist2 = visframe_histogram(frame) ::
+display len(hist2) ::
+
+~ Face detection
+faces = vis_facedetect(cam) ::
+display "faces detected:" :: display len(faces) ::
+
+~ Face mesh
+mesh = vis_facemesh(cam) ::
+display "face mesh:" :: display mesh.landmarks ::
+
+~ Face recognition
+visface_add <"John", "john.jpg"> ::
+visface_load <"faces.db"> ::
+results = vis_facerecog(cam) ::
+display "recognized:" :: display len(results) ::
+
+~ Landmarks
+lm = vis_landmarks(cam) ::
+display lm.headangle ::
+
+~ Hand tracking
+hands = vis_hands(cam) ::
+display "hands:" :: display len(hands) ::
+
+~ Pose
+pose = vis_pose(cam) ::
+display pose.activity ::
+
+~ Object detection
+objects = vis_objects(cam) ::
+display "objects:" :: display len(objects) ::
+
+~ Eye tracking
+eyes = vis_eyes(cam) ::
+display eyes.gaze ::
+display eyes.openness ::
+
+~ Emotion
+emo = vis_emotion(cam) ::
+display emo.dominant ::
+
+~ Age & Gender
+ag = vis_agegender(cam) ::
+display ag.age ::
+display ag.gender ::
+
+~ Motion
+motion = vis_motion(cam) ::
+display motion.detected ::
+
+~ Optical flow
+flow = vis_flow(cam) ::
+display flow.magnitude ::
+
+~ Color detection
+cd = vis_color(cam, "#ff0000") ::
+display cd.area ::
+
+~ QR
+qr = vis_qr(cam) ::
+display qr ::
+
+~ OCR
+ocr = visocr(frame) ::
+display ocr.text ::
+
+~ License plate
+plates = vis_plate(cam) ::
+display plates ::
+
+~ Video
+vid = visvid("test.mp4") ::
+fps2 = visvid_fps(vid) ::
+display fps2 ::
+frames2 = visvid_framecount(vid) ::
+display frames2 ::
+duration = visvid_duration(vid) ::
+display duration ::
+visvid_seek <vid, 30> ::
+vframe = visvid_read(vid) ::
+visvid_close <vid> ::
+
+~ Video writer
+writer = visvid_writer("out.mp4", 30, 640, 480) ::
+visvid_write <writer, frame> ::
+visvid_close_writer <writer> ::
+
+~ Feature detection
+tmpl_matches = vistemplate(frame, "template.png") ::
+display len(tmpl_matches) ::
+kp_desc = visfeature_detect(frame, "orb") ::
+
+~ Drawing
+visdraw_box <frame, 100, 100, 200, 200, "#ff0000", 2> ::
+visdraw_circle <frame, 320, 240, 50, "#00ff00", true> ::
+visdraw_line <frame, 0, 0, 640, 480, "#0000ff", 1> ::
+visdraw_text <frame, 10, 10, "Hello VIS", 1.0, "#ffffff"> ::
+
+~ Recording
+visrec_start <"output.mp4", 30, "mp4v"> ::
+visrec_frame <frame> ::
+visrec_stop() ::
+visshot() ::
+
+display "VIS module works" ::
+
+~ ─────────────────────────────────────────────────────────────────
+display "=== ALL PHASE 5 MODULES COMPLETE ===" ::

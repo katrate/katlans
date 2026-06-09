@@ -1,0 +1,115 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Katlans — Build & Release workflow
+#
+# Triggers:
+#   - Every push to main/master      → test + build .exe
+#   - Pull requests                  → test only (no build)
+#   - Git tag v*                     → test + build + GitHub release
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Build
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ── Test on all platforms ──────────────────────────────────────────────────
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Test minimum supported (3.10) and latest stable
+        python-version: ["3.10", "3.12"]
+        include:
+          # Also test the absolute latest on Linux
+          - os: ubuntu-latest
+            python-version: "3.13"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run test suite
+        run: python files/test_runner.py
+
+  # ── Build standalone katlans.exe (Windows only) ───────────────────────────
+  build:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install PyInstaller
+        run: |
+          pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Build katlans.exe
+        shell: pwsh
+        run: |
+          python -m PyInstaller --onefile --name katlans `
+            --add-data "files/src;src" `
+            --add-data "files/runtime;runtime" `
+            --add-data "files/test_runner.py;." `
+            --add-data "files/hello.kl;." `
+            --add-data "files/control.kl;." `
+            --add-data "files/functions.kl;." `
+            --add-data "files/test_all.kl;." `
+            --add-data "files/test_phase2.kl;." `
+            --add-data "files/test_phase3.kl;." `
+            --add-data "files/test_phase4.kl;." `
+            --add-data "files/test_phase5.kl;." `
+            --hidden-import src.lexer `
+            --hidden-import src.parser `
+            --hidden-import src.codegen `
+            --hidden-import src.compiler `
+            --hidden-import src.errors `
+            --hidden-import src.ast_nodes `
+            --distpath . files/katlans.py
+
+      - name: Verify — emit hello.kl
+        run: .\katlans.exe emit files\hello.kl
+
+      - name: Verify — test suite
+        run: .\katlans.exe test
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: katlans-${{ github.sha }}
+          path: katlans.exe
+
+  # ── Create GitHub Release (tags only) ─────────────────────────────────────
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: katlans-${{ github.sha }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: katlans.exe
+          generate_release_notes: true
