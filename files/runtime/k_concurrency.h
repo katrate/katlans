@@ -12,17 +12,26 @@
 #include <signal.h>
 #include <errno.h>
 
-#include <unistd.h>       /* MinGW-w64 provides this — sleep, write, read, pipe */
 #ifdef _WIN32
 #include <windows.h>
 #include <io.h>
+#include <fcntl.h>
 /* Windows does not have fork/waitpid/kill — stub them out */
+#ifndef pipe
+#define pipe(fds) _pipe((fds), 65536, O_BINARY)
+#endif
 #define waitpid(pid,status,options) (0)
 #define fork() ((pid_t)-1)
 #define kill(pid,sig) (0)
 #define usleep(us) Sleep((us)/1000)
+#ifndef strdup
 #define strdup(s) _strdup(s)
+#endif
+#define read  _read
+#define write _write
+#define sleep(s) Sleep((s)*1000)
 #else
+#include <unistd.h>
 #include <sys/wait.h>
 #include <sys/time.h>
 #endif

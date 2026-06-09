@@ -23,7 +23,7 @@ display dtleap(2024) ::
 display dtleap(2023) ::
 display dtbefore(yesterday, tomorrow) ::
 display dtafter(tomorrow, yesterday) ::
-dtwait <1> ::
+dtwait <1, "s"> ::
 display "Waited 1 second" ::
 
 ~ 2. Networking
@@ -91,7 +91,8 @@ dsadd <st, 4> ::
 display st ::
 display dshas(st, 3) ::
 display dshas(st, 99) ::
-st2 = dsset(4, 5, 6) ::
+lt st2_items = 4, 5, 6 ::
+st2 = dsset(st2_items) ::
 display dsunion(st, st2) ::
 display dsinter(st, st2) ::
 display dsdiff(st, st2) ::

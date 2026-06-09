@@ -379,6 +379,15 @@ static inline KVal *k_Llen(KVal *lst) {
     return kv_int((long long)lst->list->len);
 }
 static inline KVal *k_Lget(KVal *lst, KVal *idx) {
+    /* String indexing: return single-char string */
+    if (lst->type == KT_STR) {
+        long long i = idx->i;
+        long long slen = (long long)strlen(lst->s);
+        if (i < 0) i = slen + i;
+        if (i < 0 || i >= slen) return kv_void();
+        char buf[2] = { lst->s[i], '\0' };
+        return kv_str(buf);
+    }
     long long i = idx->i;
     if (i < 0) i = (long long)lst->list->len + i;
     if (i < 0 || i >= (long long)lst->list->len) return kv_void();

@@ -513,10 +513,14 @@ class CodeGen:
             else:
                 self._emit(f"kf_{node.name}({args_c});")
         elif isinstance(node, BuiltinCall):
-            c = BUILTIN_MAP.get(node.func)
-            if c:
+            if node.func == "testcheck":
                 args_c = ", ".join(self._gen_expr(a) for a in node.args)
-                self._emit(f"{c}({args_c});")
+                self._emit(f"k_testcheck({args_c}, \"<expr>\");")
+            else:
+                c = BUILTIN_MAP.get(node.func)
+                if c:
+                    args_c = ", ".join(self._gen_expr(a) for a in node.args)
+                    self._emit(f"{c}({args_c});")
         elif isinstance(node, TestDecl):
             # Emit test body inline (tests execute in main)
             self._emit(f"/* test: {node.name} */")
@@ -542,19 +546,29 @@ class CodeGen:
         val = self._gen_expr(node.value)
         self._declare(node.name)
         if node.dtype == "lt":
-            self._emit(f"KVal* {node.name} = kv_list();")
-            # initialise elements
             if isinstance(node.value, ListLiteral):
-                for el in node.value.elements:
-                    ev = self._gen_expr(el)
-                    self._emit(f"k_Ladd({node.name}, {ev});")
+                elems = node.value.elements
+                # Single element that is a call returning a list → assign directly
+                if (len(elems) == 1 and
+                        isinstance(elems[0], (BuiltinCall, FuncCall))):
+                    ev = self._gen_expr(elems[0])
+                    self._emit(f"KVal* {node.name} = {ev};")
+                else:
+                    self._emit(f"KVal* {node.name} = kv_list();")
+                    for el in elems:
+                        ev = self._gen_expr(el)
+                        self._emit(f"k_Ladd({node.name}, {ev});")
+            else:
+                # e.g. lt copy = Lcopy(x)  — just assign the returned list
+                self._emit(f"KVal* {node.name} = {val};")
         elif node.dtype == "zl":
-            # Zelo (tuple) — store as list (immutable by convention)
-            self._emit(f"KVal* {node.name} = kv_list();")
             if isinstance(node.value, TupleLiteral):
+                self._emit(f"KVal* {node.name} = kv_list();")
                 for el in node.value.elements:
                     ev = self._gen_expr(el)
                     self._emit(f"k_Ladd({node.name}, {ev});")
+            else:
+                self._emit(f"KVal* {node.name} = {val};")
         elif node.dtype == "ad":
             self._emit(f"KVal* {node.name} = kv_dict();")
             if isinstance(node.value, DictLiteral):
@@ -885,6 +899,10 @@ class CodeGen:
 
     def _gen_builtin(self, node: BuiltinCall) -> str:
         fn = node.func
+        if fn == "testcheck":
+            args_c = ", ".join(self._gen_expr(a) for a in node.args)
+            return f"k_testcheck({args_c}, \"<expr>\")"
+
         c  = BUILTIN_MAP.get(fn)
         if c:
             args_c = ", ".join(self._gen_expr(a) for a in node.args)
