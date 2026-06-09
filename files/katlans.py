@@ -253,7 +253,8 @@ def cmd_run(args):
         sys.exit(1)
 
     comp = Compiler(RUNTIME_DIR)
-    with tempfile.NamedTemporaryFile(suffix="", delete=False) as f:
+    suffix = ".exe" if os.name == "nt" else ""
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
         binary = f.name
 
     ok, err = comp.compile(c_src, binary)
@@ -270,7 +271,7 @@ def cmd_run(args):
 def cmd_build(args):
     source   = _read(args.file)
     filename = os.path.basename(args.file)
-    out      = args.output or filename.replace(".kl", "")
+    out      = args.output or filename.replace(".kl", ".exe" if os.name == "nt" else "")
 
     try:
         c_src = _pipeline(source, filename)
