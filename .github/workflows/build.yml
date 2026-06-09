@@ -57,7 +57,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Extract Katlans Version
         id: version
