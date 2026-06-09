@@ -570,8 +570,8 @@ class CodeGen:
             else:
                 self._emit(f"KVal* {node.name} = {val};")
         elif node.dtype == "ad":
-            self._emit(f"KVal* {node.name} = kv_dict();")
             if isinstance(node.value, DictLiteral):
+                self._emit(f"KVal* {node.name} = kv_dict();")
                 for key, val_node in node.value.pairs:
                     kv = self._gen_expr(key)
                     vv = self._gen_expr(val_node)
@@ -580,6 +580,8 @@ class CodeGen:
                         self._emit(f'kdict_set({node.name}->dict, {kv}->s, {vv});')
                     else:
                         self._emit(f'kdict_set({node.name}->dict, k_S({kv})->s, {vv});')
+            else:
+                self._emit(f"KVal* {node.name} = {val};")
         else:
             self._emit(f"KVal* {node.name} = {val};")
 
