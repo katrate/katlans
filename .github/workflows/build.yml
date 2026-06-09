@@ -55,6 +55,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Extract Katlans Version
+        id: version
+        shell: pwsh
+        run: |
+          $line = Select-String -Path "files\\katlans.py" -Pattern 'KATLANS_VERSION\s*=\s*"([^"]+)"'
+          $version = $line.Matches.Groups[1].Value
+          $ext_version = "$version.0"
+          echo "EXT_VERSION=$ext_version" >> $env:GITHUB_ENV
+          echo "Version extracted: $version -> $ext_version"
+
 
       - name: Install PyInstaller
         run: |
@@ -90,11 +104,25 @@ jobs:
       - name: Verify — test suite
         run: .\katlans.exe test
 
+      - name: Package VS Code Extension
+        shell: pwsh
+        run: |
+          cd vscode-extension
+          (Get-Content package.json) -replace '"version": "1.0.0"', '"version": "${{ env.EXT_VERSION }}"' | Set-Content package.json
+          npx @vscode/vsce package --yes
+          Move-Item katlans-*.vsix ..\
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: katlans-${{ github.sha }}
           path: katlans.exe
+
+      - name: Upload artifact (Extension)
+        uses: actions/upload-artifact@v4
+        with:
+          name: katlans-extension-${{ github.sha }}
+          path: katlans-*.vsix
 
   # ── Create GitHub Release (tags only) ─────────────────────────────────────
   release:
@@ -111,5 +139,8 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: katlans.exe
+          files: |
+            katlans.exe
+            katlans-*.vsix
+
           generate_release_notes: true

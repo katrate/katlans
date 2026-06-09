@@ -29,6 +29,7 @@ RUNTIME_PATH = os.path.join(RUNTIME_DIR, "katlans.h")
 
 sys.path.insert(0, ROOT)
 sys.path.insert(0, SRC_DIR)
+# pyrefly: ignore [missing-import]
 from src import Lexer, Parser, CodeGen, Compiler, KatlansError
 
 
@@ -375,7 +376,7 @@ def cmd_test(args):
 
 
 # ── Version & update URLs ────────────────────────────────────────────────
-KATLANS_VERSION = "1.1"
+KATLANS_VERSION = "1.0"
 
 # GitHub repo for updates (override with env var KATLANS_REPO)
 GITHUB_REPO = os.environ.get("KATLANS_REPO", "katlans/katlans")

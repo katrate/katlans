@@ -474,3 +474,20 @@ Share just `katlans.exe` (8 MB, built via PyInstaller). The user needs:
 3. Any text editor
 
 Or run `python install.py` for a guided setup.
+
+---
+
+## 13. VS Code Extension
+
+Katlans comes with an official VS Code extension that provides syntax highlighting and a "Run" button for your `.kl` files!
+
+### Installation
+
+Because the extension is distributed directly via GitHub instead of the Microsoft Marketplace, **it will not auto-update**. When a new version is released, you will need to download the latest `.vsix` file and install it again.
+
+1. Download the `katlans-1.0.0.vsix` file from the latest GitHub Release.
+2. Open VS Code and navigate to the **Extensions** view (`Ctrl+Shift+X`).
+3. Click the `...` menu in the top right corner of the Extensions panel.
+4. Select **Install from VSIX...**
+5. Select the downloaded `.vsix` file.
+6. Open any `.kl` file to see syntax highlighting, and click the new Play (▶) button in the top-right to run your code!
