@@ -376,7 +376,7 @@ def cmd_test(args):
 
 
 # ── Version & update URLs ────────────────────────────────────────────────
-KATLANS_VERSION = "1.3"
+KATLANS_VERSION = "1.4"
 
 # GitHub repo for updates (override with env var KATLANS_REPO)
 GITHUB_REPO = os.environ.get("KATLANS_REPO", "katlans/katlans")
