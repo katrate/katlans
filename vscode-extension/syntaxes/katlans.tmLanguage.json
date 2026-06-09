@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Katlans",
+  "scopeName": "source.katlans",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#comments"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.katlans",
+          "match": "\\b(if|else|while|for|return|break|continue|func|var|let|const|print)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.katlans",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.katlans",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.katlans",
+          "match": "//.*$"
+        }
+      ]
+    }
+  }
+}

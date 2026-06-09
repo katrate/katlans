@@ -1,0 +1,54 @@
+{
+  "name": "katlans",
+  "publisher": "Katlans",
+  "displayName": "Katlans Language Support",
+  "description": "Language support and runner for Katlans",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/katlans/katlans"
+  },
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "katlans",
+        "aliases": ["Katlans", "katlans"],
+        "extensions": [".kl"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "katlans",
+        "scopeName": "source.katlans",
+        "path": "./syntaxes/katlans.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "katlans.runFile",
+        "title": "Run Katlans File",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "katlans.runFile",
+          "when": "resourceExtname == .kl",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onLanguage:katlans"
+  ]
+}
