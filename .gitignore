@@ -16,9 +16,21 @@ __pycache__/
 .eggs/
 
 # Test outputs
-*.c        # generated C files (reproducible from .kl)
 test_out.txt
 test_dir/
+
+# Generated C files (reproducible from .kl)
+*.c
+
+# Legacy bloat — old backup copies & docs
+files/mnt/
+🚀 Katlans Language — Official Documentation/
+
+# Redundant files in files/ subdirectory
+files/pyproject.toml
+files/README.md
+files/.gitignore
+files/katlans
 
 # IDE
 .vscode/
