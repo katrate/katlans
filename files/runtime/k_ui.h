@@ -37,6 +37,7 @@
 #define waddch(w,c) ((void)0)
 #define wprintw(w,f,...) ((void)0)
 #define getmaxyx(w,r,c) ((r)=24,(c)=80)
+#define wmove(w,y,x) ((void)0)
 #define echo() ((void)0)
 #define COLOR_RED 1
 #define COLOR_GREEN 2
@@ -92,7 +93,7 @@ static inline KVal *k_uigrid(KVal *v,KVal *r,KVal *c){KWidget *w=_v2w(v);w->y=(i
 static inline KVal *k_uiplace(KVal *v,KVal *x,KVal *y){KWidget *w=_v2w(v);w->x=(int)x->i;w->y=(int)y->i;return kv_void();}
 static inline KVal *k_uidialog_info(KVal *title,KVal *msg){_kui_init();int r,c;getmaxyx(stdscr,r,c);int w=(int)strlen(msg->s)+8,h=5;WINDOW *d=newwin(h,w,(r-h)/2,(c-w)/2);box(d,0,0);mvwprintw(d,0,2," %s ",title->s);mvwprintw(d,2,2,"%s",msg->s);mvwprintw(d,3,w/2-2,"[OK]");wrefresh(d);nodelay(stdscr,FALSE);wgetch(d);nodelay(stdscr,TRUE);delwin(d);refresh();return kv_void();}
 static inline KVal *k_uidialog_ask(KVal *title,KVal *msg){_kui_init();int r,c;getmaxyx(stdscr,r,c);int w=(int)strlen(msg->s)+12,h=6;WINDOW *d=newwin(h,w,(r-h)/2,(c-w)/2);box(d,0,0);mvwprintw(d,0,2," %s ",title->s);mvwprintw(d,2,2,"%s",msg->s);mvwprintw(d,4,2,"[Y]es  [N]o");wrefresh(d);nodelay(stdscr,FALSE);int ch=wgetch(d);nodelay(stdscr,TRUE);delwin(d);refresh();return kv_bool(ch=='y'||ch=='Y');}
-static inline KVal *k_uidialog_input(KVal *prompt){_kui_init();int r,c;getmaxyx(stdscr,r,c);int pw=(int)strlen(prompt->s)+20;WINDOW *d=newwin(5,pw,(r-5)/2,(c-pw)/2);box(d,0,0);mvwprintw(d,1,2,"%s",prompt->s);mvwprintw(d,2,2,"> ");wrefresh(d);char buf[256]="";nodelay(stdscr,FALSE);echo();mvwgetnstr(d,2,4,buf,254);noecho();nodelay(stdscr,TRUE);delwin(d);refresh();return kv_str(buf);}
+static inline KVal *k_uidialog_input(KVal *prompt){_kui_init();int r,c;getmaxyx(stdscr,r,c);int pw=(int)strlen(prompt->s)+20;WINDOW *d=newwin(5,pw,(r-5)/2,(c-pw)/2);box(d,0,0);mvwprintw(d,1,2,"%s",prompt->s);mvwprintw(d,2,2,"> ");wrefresh(d);char buf[256]="";nodelay(stdscr,FALSE);echo();wgetnstr(d,buf,254);noecho();nodelay(stdscr,TRUE);delwin(d);refresh();return kv_str(buf);}
 static inline KVal *k_uiclip_set(KVal *v){strncpy(_k_clip,v->s,4095);return kv_void();}
 static inline KVal *k_uiclip_get(void){return kv_str(_k_clip);}
 static inline KVal *k_uivar_str(KVal *d){return kv_str(d?d->s:"");}

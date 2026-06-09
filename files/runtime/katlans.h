@@ -239,14 +239,28 @@ static inline KVal *k_pct(KVal *a, KVal *b) {
     double r  = (fa / 100.0) * fb;
     return kv_flt(r);
 }
+static inline char* _kstringify(KVal *v) {
+    if (!v) return strdup("void");
+    char buf[256];
+    switch (v->type) {
+        case KT_INT: snprintf(buf, 256, "%lld", v->i); return strdup(buf);
+        case KT_FLT: snprintf(buf, 256, "%g", v->f); return strdup(buf);
+        case KT_STR: return strdup(v->s);
+        case KT_BOOL: return strdup(v->b ? "true" : "false");
+        default: return strdup("?");
+    }
+}
+
 static inline KVal *k_concat(KVal *a, KVal *b) {
     /* ++ string concat */
-    char *sa = (a->type==KT_STR) ? a->s : "";
-    char *sb = (b->type==KT_STR) ? b->s : "";
+    char *sa = _kstringify(a);
+    char *sb = _kstringify(b);
     size_t n = strlen(sa)+strlen(sb)+1;
     char *buf = (char*)malloc(n);
-    strcpy(buf,sa); strcat(buf,sb);
-    KVal *r = kv_str(buf); free(buf); return r;
+    strcpy(buf, sa); strcat(buf, sb);
+    KVal *r = kv_str(buf);
+    free(sa); free(sb); free(buf);
+    return r;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
