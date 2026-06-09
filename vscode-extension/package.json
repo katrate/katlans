@@ -4,9 +4,10 @@
   "displayName": "Katlans Language Support",
   "description": "Language support and runner for Katlans",
   "version": "1.0.0",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/katlans/katlans"
+    "url": "https://github.com/katrate/katlans"
   },
   "engines": {
     "vscode": "^1.70.0"
@@ -21,6 +22,10 @@
         "id": "katlans",
         "aliases": ["Katlans", "katlans"],
         "extensions": [".kl"],
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        },
         "configuration": "./language-configuration.json"
       }
     ],

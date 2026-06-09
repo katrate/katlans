@@ -6,10 +6,11 @@ display "Hello, World!" ::
 int x = 42 ::
 flt pi = 3.14159 ::
 name = "Katlans" ::
-
+h = ask <"What is your name?"> ::
 display x ::
 display pi ::
 display name ::
+display h ::
 
 ~ String concat
 greeting = "Hello, " ++ name ++ "!" ::

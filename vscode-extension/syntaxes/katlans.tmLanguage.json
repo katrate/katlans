@@ -3,22 +3,36 @@
   "name": "Katlans",
   "scopeName": "source.katlans",
   "patterns": [
-    {
-      "include": "#keywords"
-    },
-    {
-      "include": "#strings"
-    },
-    {
-      "include": "#comments"
-    }
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords-control" },
+    { "include": "#keywords-type" },
+    { "include": "#keywords-function" },
+    { "include": "#keywords-class" },
+    { "include": "#keywords-io" },
+    { "include": "#keywords-error" },
+    { "include": "#keywords-test" },
+    { "include": "#keywords-other" },
+    { "include": "#constants" },
+    { "include": "#numbers" },
+    { "include": "#operators-block" },
+    { "include": "#operators-logical" },
+    { "include": "#operators-comparison" },
+    { "include": "#operators-arithmetic" },
+    { "include": "#punctuation" },
+    { "include": "#builtin-functions" }
   ],
   "repository": {
-    "keywords": {
+    "comments": {
       "patterns": [
         {
-          "name": "keyword.control.katlans",
-          "match": "\\b(if|else|while|for|return|break|continue|func|var|let|const|print)\\b"
+          "name": "comment.block.katlans",
+          "begin": "~~",
+          "end": "~~"
+        },
+        {
+          "name": "comment.line.katlans",
+          "match": "~.*$"
         }
       ]
     },
@@ -30,14 +44,166 @@
         {
           "name": "constant.character.escape.katlans",
           "match": "\\\\."
+        },
+        {
+          "name": "variable.other.template.katlans",
+          "match": "\\{[^}]+\\}"
         }
       ]
     },
-    "comments": {
+    "keywords-control": {
+      "name": "keyword.control.katlans",
+      "match": "\\b(if|elif|else|deta|belongs|range|in|denta|halt|continue|return)\\b"
+    },
+    "keywords-type": {
+      "name": "storage.type.katlans",
+      "match": "\\b(int|flt|lt|zl|ad|bool|void)\\b"
+    },
+    "keywords-function": {
+      "name": "keyword.declaration.function.katlans",
+      "match": "\\b(fxn|dec|async)\\b"
+    },
+    "keywords-class": {
+      "name": "keyword.declaration.class.katlans",
+      "match": "\\b(cls|self|from|borrow)\\b"
+    },
+    "keywords-io": {
+      "name": "support.function.io.katlans",
+      "match": "\\b(display|ask)\\b"
+    },
+    "keywords-error": {
+      "name": "keyword.control.exception.katlans",
+      "match": "\\b(try|catch)\\b"
+    },
+    "keywords-test": {
+      "name": "keyword.other.test.katlans",
+      "match": "\\b(test|testcheck|testrun)\\b"
+    },
+    "keywords-other": {
+      "name": "keyword.other.katlans",
+      "match": "\\b(self)\\b"
+    },
+    "constants": {
+      "name": "constant.language.katlans",
+      "match": "\\b(true|false|void)\\b"
+    },
+    "numbers": {
       "patterns": [
         {
-          "name": "comment.line.double-slash.katlans",
-          "match": "//.*$"
+          "name": "constant.numeric.float.katlans",
+          "match": "\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.katlans",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "operators-block": {
+      "patterns": [
+        {
+          "name": "keyword.operator.block.open.katlans",
+          "match": "\\|>"
+        },
+        {
+          "name": "keyword.operator.block.close.katlans",
+          "match": "<\\|"
+        },
+        {
+          "name": "keyword.operator.statement-end.katlans",
+          "match": "::"
+        }
+      ]
+    },
+    "operators-logical": {
+      "patterns": [
+        {
+          "name": "keyword.operator.logical.katlans",
+          "match": "(&&|&\\+|!&)"
+        }
+      ]
+    },
+    "operators-comparison": {
+      "patterns": [
+        {
+          "name": "keyword.operator.comparison.katlans",
+          "match": "(==|=\\\\|=>|=<|<(?!\\|)|(?<!<)>)"
+        }
+      ]
+    },
+    "operators-arithmetic": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.katlans",
+          "match": "(\\+\\+|///|//|\\+|-|\\*|/|\\^|%)"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.katlans",
+          "match": "[,;]"
+        },
+        {
+          "name": "punctuation.accessor.katlans",
+          "match": "\\."
+        }
+      ]
+    },
+    "builtin-functions": {
+      "patterns": [
+        {
+          "name": "support.function.string.katlans",
+          "match": "\\b(Scap|Slow|Slen|Snip|Sfind|Scount|Speeks|Sfront|Sback|Sswap|Schop|Srchop|Stitle|Scapfirst|Sswapcase|Szfill|Srfind|Sindex|Srindex|Sjoin|Sisalpha|Sisdigit|Sisalnum|Sisspace|Sislower|Sisupper|Sistitle|Sisascii|Sremprefix|Sremsuffix|Scasefold|Schoplines)\\b"
+        },
+        {
+          "name": "support.function.list.katlans",
+          "match": "\\b(Ladd|Llen|Lmax|Lmin|Lsum|Lget|Lsort|Lflip|Ldrop|Lpop|Lindex|Lcount|Lhas|Lcopy|Lclear|Linsert|Lextend|Lunique|Lslice|Lreversed|Lsorted)\\b"
+        },
+        {
+          "name": "support.function.dict.katlans",
+          "match": "\\b(Alen|Akeys|Avals|Aitems|Aget|Ahas|Aset|Adrop|Aclear|Acopy)\\b"
+        },
+        {
+          "name": "support.function.tuple.katlans",
+          "match": "\\b(Zlen|Zmax|Zmin|Zsum|Zhas|Zindex|Zcount)\\b"
+        },
+        {
+          "name": "support.function.math.katlans",
+          "match": "\\b(sqrt|abs|floor|ceil|log|ln|exp|sin|cos|tan|arcsin|arccos|arctan|sum|len|round|min|max|PI|E|rand|gcd|lcm|fact|divmod|all|any|enumerate|zip)\\b"
+        },
+        {
+          "name": "support.function.io.katlans",
+          "match": "\\b(fread|fwrite|fadd|fdel|fexists|flist|fmkdir|frmdir|frename|fcopy|fsize|fisdir|fisfile|fext|fbase|fdir|fjoin|freadlines|fwritelines)\\b"
+        },
+        {
+          "name": "support.function.os.katlans",
+          "match": "\\b(ossys|osram|osuptime|osboot|osuser|osrun|osget|onset|ospwd|oscd|osjoin|osbase|osdir|osext|ospath|osopen|osclipget|osclipset|osnoti|oshalt)\\b"
+        },
+        {
+          "name": "support.function.crypto.katlans",
+          "match": "\\b(crmd5|crsha|crhash|crb64enc|crb64dec|cruuid|crtoken|crenc|crdec|crcomp)\\b"
+        },
+        {
+          "name": "support.function.datetime.katlans",
+          "match": "\\b(dtnow|dtdate|dttime|dtformat|dtparse|dtstamp|dtfromstamp|dtadd|dtsub|dtdiff|dtconv|dtwait|dtleap|dtbefore|dtafter|dtequal|dtzone)\\b"
+        },
+        {
+          "name": "support.function.network.katlans",
+          "match": "\\b(netget|netpost|netput|netpatch|netdel|netjson|netdns|netping|netdl)\\b"
+        },
+        {
+          "name": "support.function.cli.katlans",
+          "match": "\\b(clired|cligreen|cliyellow|clibold|cliblue|climagenta|clicyan|clidim|cliunder|climenu|cliargs|cliflag|cliopt|cliprogress)\\b"
+        },
+        {
+          "name": "support.function.json.katlans",
+          "match": "\\b(jsparse|jsstring|jsread|jswrite|csvread|csvwrite|csvheads|csvparse|xmlparse|xmlget|xmlattr|xmlstring)\\b"
+        },
+        {
+          "name": "support.function.type-cast.katlans",
+          "match": "\\b(type|chr|ord|hex|oct|bin|I|F|S)\\b"
         }
       ]
     }
