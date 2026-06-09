@@ -109,7 +109,7 @@ jobs:
         run: |
           cd vscode-extension
           (Get-Content package.json) -replace '"version": "1.0.0"', '"version": "${{ env.EXT_VERSION }}"' | Set-Content package.json
-          npx @vscode/vsce package --yes
+          npx @vscode/vsce package --allow-missing-repository --no-dependencies
           Move-Item katlans-*.vsix ..\
 
       - name: Upload artifact
