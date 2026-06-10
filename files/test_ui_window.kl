@@ -1,0 +1,81 @@
+~ ── UI Window Demo ───────────────────────────────────────────
+display "=== UI Window Demo ===" ::
+
+~ 1. Create a larger window
+win = uiwin("Katlans UI Demo", 60, 18) ::
+
+~ 2. Create widgets - Title
+title_lbl = uilabel(win, " Welcome to Katlans TUI! ") ::
+uiplace <title_lbl, 3, 20> ::
+
+~ 3. Widgets - Input Section
+lbl_name = uilabel(win, "Name:") ::
+ent_name = uientry(win) ::
+uientry_set <ent_name, "Katlans User"> ::
+uiplace <lbl_name, 5, 3> ::
+uiplace <ent_name, 5, 10> ::
+
+lbl_age = uilabel(win, "Age:") ::
+ent_age = uientry(win) ::
+uientry_set <ent_age, "25"> ::
+uiplace <lbl_age, 6, 3> ::
+uiplace <ent_age, 6, 10> ::
+
+~ 4. Checkboxes
+chk_feature = uicheck(win, "Enable Dark Mode") ::
+uicheck_set <chk_feature, true> ::
+uiplace <chk_feature, 8, 3> ::
+
+chk_notify = uicheck(win, "Enable Notifications") ::
+uiplace <chk_notify, 9, 3> ::
+
+~ 5. Buttons
+btn_save = uibtn(win, "Save") ::
+btn_cancel = uibtn(win, "Cancel") ::
+uiplace <btn_save, 11, 5> ::
+uiplace <btn_cancel, 11, 18> ::
+
+~ 6. Slider and Progress Bar
+sld = uislider(win, 0, 100) ::
+uislider_set <sld, 0> ::
+uiplace <sld, 13, 3> ::
+
+prg = uiprog(win, 0, 100) ::
+uiprog_set <prg, 0> ::
+uiplace <prg, 15, 3> ::
+
+status_lbl = uilabel(win, "Status: Initializing...") ::
+uiplace <status_lbl, 16, 3> ::
+
+~ 7. Animation Loop - Simulate loading
+int i = 0 ::
+denta i < 20 |>
+    slider_val = I(i * 5) :: ~ 0, 5, 10, ..., 95
+    prog_val = I(i * 5 + 5) :: ~ 5, 10, 15, ..., 100
+    
+    uislider_set <sld, slider_val> ::
+    uiprog_set <prg, prog_val> ::
+    
+    status_lbl_text = "Status: Processing step " ++ S(i + 1) ++ "/20" ::
+    uilabel_text <status_lbl, status_lbl_text> ::
+    
+    uirun <win> ::
+    dtwait <200, "ms"> :: ~ Wait 200ms
+    
+    i = i + 1 ::
+<|::
+
+~ 8. Final state
+uislider_set <sld, 100> ::
+uiprog_set <prg, 100> ::
+uilabel_text <status_lbl, "Status: Complete!"> ::
+uicheck_set <chk_notify, true> ::
+uirun <win> ::
+
+~ 9. Show dialog
+uidialog_info <"Katlans", "UI Demo Complete!"> ::
+
+~ 10. Close
+uiclose <win> ::
+
+display "UI Window Demo Complete!" ::

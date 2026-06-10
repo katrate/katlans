@@ -2,6 +2,8 @@
 Katlans Code Generator  —  AST → C source
 """
 import os
+from .lexer import Lexer
+from .parser import Parser
 from .ast_nodes import *
 from .errors import CodeGenError
 
@@ -235,6 +237,7 @@ BUILTIN_MAP = {
     "gm_init":      "k_gm_init",      "gmwin":         "k_gmwin",
     "gmwin_clear":  "k_gmwin_clear",  "gmwin_flip":    "k_gmwin_flip",
     "gmwin_caption":"k_gmwin_caption","gmwin_fps":    "k_gmwin_fps",
+    "gmwin_hdc":    "k_gmwin_hdc",    "gmwin_size":   "k_gmwin_size",
     "gm_running":   "k_gm_running",   "gm_stop":       "k_gm_stop",
     "gm_quit":      "k_gm_quit",      "gm_events":     "k_gm_events",
     "gminput_key_pressed":"k_gminput_key_pressed","gminput_mouse_pos":"k_gminput_mouse_pos",
@@ -291,6 +294,19 @@ BUILTIN_MAP = {
     "uivar_bool":   "k_uivar_bool",   "uivar_get":     "k_uivar_get",
     "uivar_set":    "k_uivar_set",
     "uiinfo_screenwidth":"k_uiinfo_screenwidth","uiinfo_screenheight":"k_uiinfo_screenheight",
+
+    # ── Design Module (ds prefix) ────────────────
+    "ds_color":        "k_ds_color",        "ds_color_rgb":    "k_ds_color_rgb",
+    "ds_color_hex":    "k_ds_color_hex",    "ds_bind":         "k_ds_bind",
+    "ds_size":         "k_ds_size",         "ds_draw_roundrect":"k_ds_draw_roundrect",
+    "ds_fill_rect":    "k_ds_fill_rect",     "ds_draw_rect":    "k_ds_draw_rect",
+    "ds_gradient":     "k_ds_gradient",      "ds_shadow":       "k_ds_shadow",
+    "ds_text":         "k_ds_text",          "ds_text_bold":    "k_ds_text_bold",
+    "ds_text_measure": "k_ds_text_measure",  "ds_parse_css":    "k_ds_parse_css",
+    "ds_parse_styles": "k_ds_parse_styles",  "ds_box_model":    "k_ds_box_model",
+    "ds_layout_flex":  "k_ds_layout_flex",   "ds_layout_grid":  "k_ds_layout_grid",
+    "ds_apply_style":  "k_ds_apply_style",   "ds_render_box":   "k_ds_render_box",
+    "ds_screen_size":  "k_ds_screen_size",
 
     # ── Phase 5: VIS Module (vis prefix) ─────────
     "viscam":           "k_viscam",           "viscam_list":         "k_viscam_list",
@@ -375,15 +391,22 @@ VOID_BUILTINS = {
 
 
 class CodeGen:
-    def __init__(self, runtime_path: str, filename: str = "<stdin>"):
+    def __init__(self, runtime_path: str, filename: str = "<stdin>", root_dir: str = ""):
         self.runtime   = runtime_path
         self.filename  = filename
+        self._root_dir = root_dir or os.path.dirname(os.path.abspath(filename)) if filename and filename != "<stdin>" else ""
         self._indent   = 0
         self._lines: list[str] = []
         self._func_names: set[str] = set()
         self._forward_decls: list[str] = []
         # Track declared variable names per scope to emit KVal* on first use
         self._declared: list[set] = [set()]   # stack of scopes
+        # Track class types for variables (e.g., "c" -> "Counter")
+        self._class_types: dict[str, str] = {}
+        # Counter for template temp variable names
+        self._template_counter = 0
+        # Track already-included files to prevent circular deps
+        self._included: set[str] = set()
 
     def _scope_push(self):  self._declared.append(set())
     def _scope_pop(self):   self._declared.pop()
@@ -418,28 +441,12 @@ class CodeGen:
         col  = getattr(node, "col",  None)
         raise CodeGenError(msg, line, col, self.filename)
 
-    # ── Entry point ───────────────────────────────────────────────────────
-
-    def __init__(self, runtime_path: str, filename: str = "<stdin>"):
-        self.runtime   = runtime_path
-        self.filename  = filename
-        self._indent   = 0
-        self._lines: list[str] = []
-        self._func_names: set[str] = set()
-        self._forward_decls: list[str] = []
-        # Track declared variable names per scope to emit KVal* on first use
-        self._declared: list[set] = [set()]   # stack of scopes
-        # Track class types for variables (e.g., "c" -> "Counter")
-        self._class_types: dict[str, str] = {}
-        # Counter for template temp variable names
-        self._template_counter = 0
-
     def generate(self, program: Program) -> str:
         # Preamble
         self._emit_raw(f'#include "{self.runtime}"')
         self._emit_raw("")
 
-        # Collect forward declarations for user functions
+        # Collect forward declarations for user functions (direct + from includes)
         self._collect_funcs(program.body)
 
         # Emit forward declarations
@@ -448,23 +455,42 @@ class CodeGen:
         if self._forward_decls:
             self._emit_raw("")
 
-        # Emit top-level function definitions first
+        # Pre-process UseStmt nodes: resolve includes and store body for later
+        for node in program.body:
+            if isinstance(node, UseStmt):
+                self._gen_use_prepare(node)
+
+        # Emit all function declarations (direct + from UseStmt bodies)
         for node in program.body:
             if isinstance(node, FuncDecl):
                 self._gen_func_decl(node)
+            elif isinstance(node, UseStmt):
+                for n in node.body:
+                    if isinstance(n, FuncDecl):
+                        self._gen_func_decl(n)
 
-        # Emit top-level class definitions
+        # Emit all class declarations
         for node in program.body:
             if isinstance(node, ClassDecl):
                 self._gen_class_decl(node)
+            elif isinstance(node, UseStmt):
+                for n in node.body:
+                    if isinstance(n, ClassDecl):
+                        self._gen_class_decl(n)
 
-        # Main function
+        # Main function — emit only statements (not func/class decls)
         self._emit_raw("int main(void) {")
         self._indent_in()
 
         for node in program.body:
             if not isinstance(node, (FuncDecl, ClassDecl)):
-                self._gen_stmt(node)
+                if isinstance(node, UseStmt):
+                    # Emit only non-func/class statements from included file
+                    for n in node.body:
+                        if not isinstance(n, (FuncDecl, ClassDecl)):
+                            self._gen_stmt(n)
+                else:
+                    self._gen_stmt(node)
 
         self._emit("return 0;")
         self._indent_out()
@@ -526,6 +552,8 @@ class CodeGen:
             self._emit(f"/* test: {node.name} */")
             for s in node.body:
                 self._gen_stmt(s)
+        elif isinstance(node, UseStmt):
+            self._gen_use(node)
         elif isinstance(node, TryCatch):
             self._gen_try(node)
         elif isinstance(node, ClassInstantiate):
@@ -794,6 +822,68 @@ class CodeGen:
         self._emit("}")
         # catch block (simplified — always runs for now in v1)
         self._emit(f"/* catch ({node.error_var}) */")
+
+    # ── Use (file include) ──────────────────────────────────────────────────
+    # use "filename.kl" ::  — inline the referenced file's contents
+
+    def _resolve_use_path(self, node: UseStmt) -> str:
+        """Resolve a use statement's filepath to an absolute path."""
+        fpath = node.filepath
+        if self._root_dir and not os.path.isabs(fpath):
+            fpath = os.path.normpath(os.path.join(self._root_dir, fpath))
+        return os.path.normcase(os.path.abspath(fpath))
+
+    def _gen_use_prepare(self, node: UseStmt):
+        """Pre-process a UseStmt: resolve path, parse file, store body in node.body.
+        Called BEFORE main() so func/class decls end up at the right scope."""
+        if node.body:
+            return  # already prepared
+
+        fpath = self._resolve_use_path(node)
+
+        if fpath in self._included:
+            node.body = []
+            return
+        if not os.path.exists(fpath):
+            self._error(f"File not found: '{node.filepath}' (resolved: {fpath})", node)
+            return
+
+        self._included.add(fpath)
+
+        try:
+            with open(fpath, "r", encoding="utf-8") as f:
+                src = f.read()
+        except Exception as e:
+            self._error(f"Cannot read '{node.filepath}': {e}", node)
+            return
+
+        filen = os.path.basename(fpath)
+        try:
+            lexer = Lexer(src, filen)
+            tokens = lexer.tokenise()
+            parser = Parser(tokens, filen)
+            included_ast = parser.parse()
+        except Exception as e:
+            self._emit(f"/* Error parsing '{node.filepath}': {e} */")
+            return
+
+        node.body = included_ast.body
+
+        # Recursively prepare any nested UseStmt nodes in the included file
+        for n in included_ast.body:
+            if isinstance(n, UseStmt):
+                self._gen_use_prepare(n)
+
+    def _gen_use(self, node: UseStmt):
+        """Emit the statements from an included file at the current position.
+        Called inside main() — only emits non-func/class statements."""
+        if not node.body:
+            return
+        self._emit(f"/* --- begin '{node.filepath}' --- */")
+        for n in node.body:
+            if not isinstance(n, (FuncDecl, ClassDecl)):
+                self._gen_stmt(n)
+        self._emit(f"/* --- end '{node.filepath}' --- */")
 
     # ── Expression codegen ────────────────────────────────────────────────
 

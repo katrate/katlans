@@ -1,0 +1,36 @@
+~ ── UI Module Test ──────────────────────────────────────────────
+display "=== UI Module Test ===" ::
+
+~ 1. Create Window
+win = uiwin("Katlans UI Test", 60, 20) ::
+
+~ 2. Create Widgets
+lbl = uilabel(win, "Hello from Katlans TUI!") ::
+btn = uibtn(win, "Click Me") ::
+ent = uientry(win) ::
+chk = uicheck(win, "Enable Feature") ::
+sld = uislider(win, 0, 100) ::
+prg = uiprog(win, 0, 100) ::
+
+~ 3. Layout (Pack and Place)
+uiplace <lbl, 2, 2> ::
+uiplace <btn, 4, 2> ::
+uiplace <ent, 6, 2> ::
+uiplace <chk, 8, 2> ::
+uiplace <sld, 10, 2> ::
+uiplace <prg, 12, 2> ::
+
+~ 4. Widget Interactions
+uislider_set <sld, 50> ::
+uiprog_set <prg, 75> ::
+uientry_set <ent, "Type here..."> ::
+uicheck_set <chk, true> ::
+
+~ 5. Run & Close
+~ To manually test UI interaction, use uirun(win).
+~ We run it once to draw it to the terminal screen.
+uirun <win> ::
+dtwait <2, "s"> :: ~ Wait 2 seconds so user can see it
+uiclose <win> ::
+
+display "UI Tests Complete!" ::

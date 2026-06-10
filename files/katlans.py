@@ -55,13 +55,13 @@ def _read(path: str) -> str:
         return f.read()
 
 
-def _pipeline(source: str, filename: str) -> str:
+def _pipeline(source: str, filename: str, root_dir: str = "") -> str:
     """source -> C source string"""
     lexer  = Lexer(source, filename)
     tokens = lexer.tokenise()
     parser = Parser(tokens, filename)
     ast    = parser.parse()
-    gen    = CodeGen(RUNTIME_PATH, filename)
+    gen    = CodeGen(RUNTIME_PATH, filename, root_dir)
     c_src  = gen.generate(ast)
     return c_src
 
@@ -242,9 +242,10 @@ def _ensure_compiler() -> str:
 def cmd_run(args):
     source   = _read(args.file)
     filename = os.path.basename(args.file)
+    root_dir = os.path.dirname(os.path.abspath(args.file))
 
     try:
-        c_src = _pipeline(source, filename)
+        c_src = _pipeline(source, filename, root_dir)
     except KatlansError as e:
         print(e); sys.exit(1)
 
@@ -272,10 +273,11 @@ def cmd_run(args):
 def cmd_build(args):
     source   = _read(args.file)
     filename = os.path.basename(args.file)
+    root_dir = os.path.dirname(os.path.abspath(args.file))
     out      = args.output or filename.replace(".kl", ".exe" if os.name == "nt" else "")
 
     try:
-        c_src = _pipeline(source, filename)
+        c_src = _pipeline(source, filename, root_dir)
     except KatlansError as e:
         print(e); sys.exit(1)
 
@@ -295,8 +297,9 @@ def cmd_build(args):
 def cmd_emit(args):
     source   = _read(args.file)
     filename = os.path.basename(args.file)
+    root_dir = os.path.dirname(os.path.abspath(args.file))
     try:
-        c_src = _pipeline(source, filename)
+        c_src = _pipeline(source, filename, root_dir)
         # Always try stdout first - works for pipes, subprocess capture, etc.
         # On Windows cp1252 terminals, also write .c file as fallback
         if sys.stdout.isatty() and sys.stdout.encoding and sys.stdout.encoding.lower() in ("cp1252", "cp1254"):
@@ -376,7 +379,7 @@ def cmd_test(args):
 
 
 # ── Version & update URLs ────────────────────────────────────────────────
-KATLANS_VERSION = "1.5"
+KATLANS_VERSION = "1.6"
 
 # GitHub repo for updates (override with env var KATLANS_REPO)
 GITHUB_REPO = os.environ.get("KATLANS_REPO", "katlans/katlans")

@@ -3,7 +3,7 @@
   "publisher": "Katlans",
   "displayName": "Katlans Language Support",
   "description": "Language support and runner for Katlans",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "icon": "icon.png",
   "repository": {
     "type": "git",

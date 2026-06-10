@@ -5,6 +5,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+static HWND _kv_hwnd_p=NULL;
+#endif
 
 /* ── Camera ─────────────────────────────────────────────────────────────── */
 
@@ -41,7 +46,29 @@ static inline KVal *k_visload(KVal *path){
     return f;
 }
 static inline KVal *k_vissave(KVal *f,KVal *path){kdict_set(f->dict,"path",kv_str(path->s));return kv_void();}
-static inline KVal *k_visframe_show(KVal *f,KVal *title){(void)f;printf("[VIS] Showing frame in window: %s\n",title->s);return kv_void();}
+static inline KVal *k_visframe_show(KVal *f,KVal *title){
+#ifdef _WIN32
+    HINSTANCE hi=GetModuleHandle(NULL);
+    if(!_kv_hwnd_p||!IsWindow(_kv_hwnd_p)){
+        WNDCLASSEX wc={0};wc.cbSize=sizeof(WNDCLASSEX);wc.lpfnWndProc=DefWindowProc;
+        wc.hInstance=hi;wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
+        wc.lpszClassName="KatlansVis";RegisterClassEx(&wc);
+        int fw=640,fh=480;
+        KVal *kv_w=kdict_get(f->dict,"w"),*kv_h=kdict_get(f->dict,"h");
+        if(kv_w&&kv_w->type==KT_INT)fw=(int)kv_w->i;
+        if(kv_h&&kv_h->type==KT_INT)fh=(int)kv_h->i;
+        RECT r={0,0,fw,fh};AdjustWindowRect(&r,WS_OVERLAPPEDWINDOW,FALSE);
+        _kv_hwnd_p=CreateWindowEx(0,"KatlansVis",title->s,
+            WS_OVERLAPPEDWINDOW|WS_VISIBLE,
+            CW_USEDEFAULT,CW_USEDEFAULT,
+            r.right-r.left,r.bottom-r.top,NULL,NULL,hi,NULL);
+    }
+    if(_kv_hwnd_p){SetWindowText(_kv_hwnd_p,title->s);ShowWindow(_kv_hwnd_p,SW_SHOW);}
+    MSG msg;while(PeekMessage(&msg,NULL,0,0,PM_REMOVE)){TranslateMessage(&msg);DispatchMessage(&msg);}
+#else
+    (void)f;printf("[VIS] Showing frame in window: %s\n",title->s);
+#endif
+return kv_void();}
 static inline KVal *k_visframe_size(KVal *f){
     KVal *r=kv_list();klist_push(r->list,kdict_get(f->dict,"w"));klist_push(r->list,kdict_get(f->dict,"h"));return r;
 }

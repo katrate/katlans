@@ -1,0 +1,8 @@
+display "Main file starting" ::
+
+use "test_use_lib.kl" ::
+
+display "After use statement" ::
+
+int result = fxn add <5, 3> ::
+display result ::

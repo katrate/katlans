@@ -1,0 +1,37 @@
+~ ── Game Module Test ────────────────────────────────────────────
+display "=== Game Module Test ===" ::
+
+~ 1. Initialization
+gm_init() ::
+display "game initialized" ::
+
+~ 2. Sprites
+player = gmsprite("@") ::
+gmsp_pos <player, 10, 10> ::
+gmsp_vel <player, 1, 0> ::
+display "player sprite created" ::
+
+enemy = gmsprite("E") ::
+gmsp_pos <enemy, 20, 15> ::
+gmsp_visible <enemy, true> ::
+display "enemy sprite created" ::
+
+~ 3. Groups
+group = gmgroup() ::
+gmgroup_add <group, player> ::
+gmgroup_add <group, enemy> ::
+count = gmgroup_count(group) ::
+display "group count:" :: display count ::
+
+~ 4. Collision
+col = gmcol_rect(player, enemy) ::
+display "collision:" :: display col ::
+dist = gmcol_dist(player, enemy) ::
+display "distance:" :: display dist ::
+
+~ 5. Clock
+clk = gmclock() ::
+display "clock tick:" :: display clk ::
+
+gm_stop() ::
+display "Game Tests Complete!" ::

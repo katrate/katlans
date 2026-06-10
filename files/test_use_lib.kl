@@ -1,0 +1,4 @@
+display "Hello from test_use_lib!" ::
+fxn dec <add> <a, b> |>
+  return a + b ::
+<|::

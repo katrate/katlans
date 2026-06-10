@@ -223,6 +223,12 @@ class TestDecl(Node):
 # ── Error handling ────────────────────────────────────────────────────────────
 
 @dataclass
+class UseStmt(Node):
+    """use "filename.kl" ::  — include another file"""
+    filepath: str = ""
+    body:     list = field(default_factory=list)   # populated during codegen
+
+@dataclass
 class TryCatch(Node):
     try_body:   list = field(default_factory=list)
     error_var:  str  = ""

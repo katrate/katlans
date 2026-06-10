@@ -1,0 +1,58 @@
+~ ── ML Module Test ──────────────────────────────────────────────
+display "=== ML Module Test ===" ::
+
+~ 1. Tensor Creation
+t_zeros = mlzeros(2, 3) ::
+display "Zeros Tensor:" ::
+mlt_print <t_zeros> ::
+
+t_ones = mlones(2, 2) ::
+display "Ones Tensor:" ::
+mlt_print <t_ones> ::
+
+t_rand = mlrand(3, 3) ::
+display "Random Tensor:" ::
+mlt_print <t_rand> ::
+
+~ 2. Basic Operations
+ta = mlones(2, 2) ::
+tb = mlones(2, 2) ::
+t_add = mlt_add(ta, tb) ::
+display "Add:" ::
+mlt_print <t_add> ::
+
+t_mul = mlt_mul(ta, t_add) ::
+display "Multiply:" ::
+mlt_print <t_mul> ::
+
+~ 3. Tensor Math
+display "Sum:" :: display mlt_sum(t_add) ::
+display "Mean:" :: display mlt_mean(t_add) ::
+display "Max:" :: display mlt_max(t_add) ::
+display "Min:" :: display mlt_min(t_add) ::
+
+~ 4. Activations
+t_neg = mlrandn(2, 2) ::
+relu_out = mlt_relu(t_neg) ::
+display "ReLU:" ::
+mlt_print <relu_out> ::
+sigmoid_out = mlt_sigmoid(t_neg) ::
+display "Sigmoid:" ::
+mlt_print <sigmoid_out> ::
+tanh_out = mlt_tanh(t_neg) ::
+display "Tanh:" ::
+mlt_print <tanh_out> ::
+
+~ 5. Neural Network Model
+model = mlmodel_seq() ::
+mlmodel_add_linear <model, 4, 8> ::
+mlmodel_add_relu <model> ::
+mlmodel_add_linear <model, 8, 3> ::
+mlmodel_add_softmax <model> ::
+
+inputs = mlones(1, 4) ::
+outputs = mlmodel_forward(model, inputs) ::
+display "Model Output:" ::
+mlt_print <outputs> ::
+
+display "ML Tests Complete!" ::

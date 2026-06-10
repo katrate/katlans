@@ -51,6 +51,7 @@ class TT(Enum):
     # ── I/O ──────────────────────────────────────
     DISPLAY = auto()
     ASK     = auto()
+    USE     = auto()
 
     # ── Arithmetic operators ──────────────────────
     PLUS    = auto()   # +
@@ -134,6 +135,7 @@ KEYWORDS = {
     "testcheck": TT.TESTCHECK,
     "display":   TT.DISPLAY,
     "ask":       TT.ASK,
+    "use":       TT.USE,
 }
 
 

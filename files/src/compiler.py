@@ -76,7 +76,7 @@ class Compiler:
                     "-Wno-unused-variable",
                     "-Wno-unused-value",
                     "-Wno-implicit-function-declaration",
-                ] + (["-lws2_32"] if os.name == "nt" else []),
+                ] + (["-lws2_32", "-lcomctl32", "-lgdi32"] if os.name == "nt" else []),
                 capture_output=True,
                 text=True,
             )

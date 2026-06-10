@@ -1,0 +1,44 @@
+~ ── Game Window Demo ──────────────────────────────────────────
+display "=== Game Window Demo ===" ::
+
+~ 1. Initialize the game engine
+gm_init() ::
+
+~ 2. Create a game window (800x600 pixels)
+win = gmwin("Katlans Game Demo", 800, 600) ::
+gmwin_fps <60> ::
+
+~ 3. Create sprites
+player = gmsprite("@") ::
+gmsp_pos <player, 50, 300> ::
+gmsp_vel <player, 2, 0> ::
+
+~ 4. Animation loop - 60 frames
+int frame = 0 ::
+denta frame < 60 |>
+    gmwin_clear <win> ::
+    
+    ~ Draw some shapes
+    gmdraw_rect <win, 16711680, 50, 50, 200, 100> :: ~ Red rect (RGB 255,0,0 = 16711680)
+    gmdraw_circle <win, 65280, 400, 200, 80> :: ~ Green circle (RGB 0,255,0 = 65280)
+    gmdraw_line <win, 255, 600, 50, 700, 400> :: ~ Blue line (RGB 0,0,255 = 255)
+    gmdraw_text <win, 50, 450, "Hello from Katlans Game!"> ::
+    
+    ~ Move and draw the player sprite
+    pos_x = I(frame * 12 + 50) ::
+    gmsp_pos <player, pos_x, 300> ::
+    gmsp_draw <player, win> ::
+    
+    ~ Draw title
+    title_text = "Katlans Game Engine - Frame " ++ S(frame + 1) ++ "/60" ::
+    gmdraw_text <win, 10, 10, title_text> ::
+    
+    gmwin_flip <win> ::
+    frame = frame + 1 ::
+<|::
+
+~ 5. Clean up
+gm_stop() ::
+gm_quit() ::
+
+display "Game Window Demo Complete!" ::

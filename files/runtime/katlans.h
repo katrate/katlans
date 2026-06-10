@@ -1019,5 +1019,6 @@ static inline KVal *k_ltzip(KVal *a, KVal *b) {
 #include "k_game.h"
 #include "k_ui.h"
 #include "k_finance.h"
+#include "k_design.h"
 
 #endif /* KATLANS_H */

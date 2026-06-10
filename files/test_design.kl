@@ -1,0 +1,128 @@
+~ test_design.kl -- Katlans Design Module Demo
+~ Demonstrates: colors, gradients, shadows, rounded rects,
+~ styled text, flexbox layout, grid layout, and animations
+~ 
+~ Run: python files/katlans.py run files/test_design.kl
+
+display "=== Katlans Design Module Demo ==="::
+
+~ -- Set up game window (gives us a drawing surface)
+gm_init()::
+win = gmwin("Katlans Design Demo", 800, 600)::
+gmwin_fps <60>::
+
+~ -- Get HDC and bind design module
+hdc = gmwin_hdc()::
+ds_bind <hdc, 800, 600>::
+
+~ -- Static drawing (done once, not in loop)
+ds_fill_rect <0, 0, 800, 600, 1712430>::
+
+~ Title section
+ds_text_bold <250, 10, "Katlans Design Module", 43775, 28>::
+ds_text <250, 42, "CSS-like styling engine with GDI rendering", 8964351, 14>::
+
+~ Rounded Rectangles demo
+ds_text_bold <30, 70, "Rounded Corners:", 16777215, 14>::
+ds_draw_roundrect <30, 90, 60, 50, 10, 16737931>::
+ds_draw_roundrect <100, 90, 60, 50, 20, 16752973>::
+ds_draw_roundrect <170, 90, 60, 50, 30, 16763963>::
+
+~ Gradients demo
+ds_text_bold <30, 155, "Gradients:", 16777215, 14>::
+ds_gradient <30, 175, 120, 50, 16711680, 255, true>::
+ds_gradient <170, 175, 120, 50, 65280, 16711935, true>::
+ds_gradient <310, 175, 50, 80, 16776960, 16711680, false>::
+
+~ Styled Box with Border + Border-Radius
+ds_text_bold <30, 240, "Styled Box:", 16777215, 14>::
+ad box_style = {"bg",2968392}; {"border",2}; {"border-radius",12}; {"border-color",4886271}::
+ds_render_box <30, 260, 160, 80, box_style>::
+ds_text <50, 290, "Styled Panel", 16777215, 16>::
+
+~ Shadow Demo
+ds_text_bold <30, 355, "Shadows:", 16777215, 14>::
+ds_shadow <260, 365, 60, 50, 6, 0>::
+ds_fill_rect <260, 365, 60, 50, 4886271>::
+ds_shadow <340, 365, 60, 50, 12, 0>::
+ds_fill_rect <340, 365, 60, 50, 16737931>::
+
+~ Color Palette
+ds_text_bold <30, 430, "Colors:", 16777215, 14>::
+ds_fill_rect <30, 450, 50, 50, 16711680>::
+ds_fill_rect <90, 450, 50, 50, 65280>::
+ds_fill_rect <150, 450, 50, 50, 255>::
+ds_fill_rect <210, 450, 50, 50, 16776960>::
+ds_fill_rect <270, 450, 50, 50, 16711935>::
+ds_fill_rect <330, 450, 50, 50, 65535>::
+
+~ Flexbox-style layout demo
+ds_text_bold <430, 70, "Flexbox Row:", 16777215, 14>::
+ds_fill_rect <430, 90, 60, 40, 16737931>::
+ds_fill_rect <500, 90, 60, 40, 4886271>::
+ds_fill_rect <570, 90, 60, 40, 5361510>::
+ds_fill_rect <640, 90, 60, 40, 16763963>::
+
+~ Grid Layout Demo
+ds_text_bold <430, 150, "Grid Layout:", 16777215, 14>::
+int gx = 430::
+int gy = 170::
+int g_row = 0::
+denta g_row < 2 |>
+    int g_col = 0::
+    denta g_col < 3 |>
+        int cx = gx + g_col * 80::
+        int cy = gy + g_row * 50::
+        int ci = (g_row * 3 + g_col) * 40000::
+        ds_fill_rect <cx, cy, 70, 40, 6684672 + ci>::
+        ~ Use S() to convert number to string (NOT I() which returns int → segfault!)
+        ds_text <cx + 30, cy + 12, S(g_row * 3 + g_col), 16777215, 12>::
+        g_col = g_col + 1::
+    <|::
+    g_row = g_row + 1::
+<|::
+
+~ Typography Demos
+ds_text_bold <430, 310, "Typography:", 16777215, 14>::
+ds_text <430, 330, "Normal text - Segoe UI 14px", 13421772, 14>::
+ds_text_bold <430, 350, "Bold text - Segoe UI 14px", 16752973, 14>::
+ds_text <430, 370, "Large text example", 5361510, 22>::
+ds_text <430, 400, "Small text", 8947848, 11>::
+
+~ Box Model Info
+ds_text_bold <30, 520, "Box Model:", 16777215, 14>::
+ds_text <30, 540, "Margin: 10px | Border: 2px | Padding: 8px", 8947848, 12>::
+
+~ Frame & Instructions (static for this version)
+ds_text <10, 570, "Press ESC or close window to exit", 6710886, 12>::
+
+~ Flip once to show static content
+gmwin_flip <win>::
+
+~ -- Animation loop -- 10 frames for progress bar animation
+int frame = 0::
+denta frame < 10 |>
+
+    ~ Redraw moving parts on top of static background
+    ~ Animated Progress Bar
+    ds_text_bold <430, 430, "Animated Progress:", 16777215, 14>::
+    int pct = frame * 10::
+    int bar_w = pct * 250 / 100::
+    ds_fill_rect <430, 450, 250, 20, 3355443>::
+    ds_gradient <430, 450, bar_w, 20, 52479, 26367, true>::
+    ds_draw_rect <430, 450, 250, 20, 6710886>::
+    ds_text_bold <540, 450, S(pct) ++ "%", 16777215, 14>::
+
+    ~ Flip to screen
+    gmwin_flip <win>::
+    frame = frame + 1::
+
+    ~ -- Check if window was closed by user
+    if !& gm_running() |>
+        frame = 10::
+    <|::
+<|::
+
+~ -- Cleanup
+gm_quit()::
+display "Design Module Demo Complete!"::

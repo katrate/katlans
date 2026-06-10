@@ -151,6 +151,10 @@ class Parser:
         if tok.type == TT.CLS:
             return self._parse_class_inst()
 
+        # use
+        if tok.type == TT.USE:
+            return self._parse_use()
+
         # try / catch
         if tok.type == TT.TRY:
             return self._parse_try()
@@ -379,6 +383,15 @@ class Parser:
                 values.append(self._parse_expr())
         self._expect_dcolon()
         return ReturnStmt(values=values, line=tok.line, col=tok.col)
+
+    # ── Use (file include) ─────────────────────────────────────────────────────
+    # use "filename.kl" ::
+
+    def _parse_use(self) -> UseStmt:
+        tok = self._advance()   # consume 'use'
+        fname = self._expect(TT.STR_LIT, "expected filename string after 'use'").value
+        self._expect_dcolon()
+        return UseStmt(filepath=fname, line=tok.line, col=tok.col)
 
     # ── Function declaration ───────────────────────────────────────────────
     # fxn dec <name> <params> |> ... <|::

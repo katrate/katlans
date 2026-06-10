@@ -194,39 +194,39 @@ static inline KVal *k_finind_vwap(KVal *hist){
     return l;
 }
 
+#ifdef _WIN32
+static void _kf_show_window(const char *title,KVal *data,const char *field);
+#endif
+
 static inline KVal *k_finchart_line(KVal *hist,KVal *field,KVal *title){
     const char *f=field->type==KT_STR?field->s:"close";
-    int n=(int)hist->list->len;if(!n)return kv_void();
-    double mn=1e18,mx=-1e18;
-    double *v=(double*)malloc(n*sizeof(double));
+    const char *t=title->type==KT_STR?title->s:"Chart";
+#ifdef _WIN32
+    _kf_show_window(t,hist,f);
+#else
+    int n=(int)hist->list->len;if(!n)return kv_void();double mn=1e18,mx=-1e18;double *v=(double*)malloc(n*sizeof(double));
     for(int i=0;i<n;i++){v[i]=kdict_get(hist->list->items[i]->dict,f)->f;if(v[i]<mn)mn=v[i];if(v[i]>mx)mx=v[i];}
-    int H=15,W=70;
-    printf("\n  %s\n  %.2f |\n",title->type==KT_STR?title->s:"Chart",mx);
-    for(int row=1;row<H;row++){
-        printf("       |");
-        for(int x=0;x<W;x++){int idx=x*n/W;int r=(int)((mx-v[idx])*(H-1)/(mx-mn+1e-10));printf(r==row?"*":" ");}
-        printf("\n");
-    }
-    printf("  %.2f +",mn);for(int x=0;x<W;x++)printf("-");printf("\n\n");
-    free(v);return kv_void();
+    int H=15,W=70;printf("\n  %s\n  %.2f |\n",t,mx);
+    for(int row=1;row<H;row++){printf("       |");for(int x=0;x<W;x++){int idx=x*n/W;int r=(int)((mx-v[idx])*(H-1)/(mx-mn+1e-10));printf(r==row?"*":" ");}printf("\n");}
+    printf("  %.2f +",mn);for(int x=0;x<W;x++)printf("-");printf("\n\n");free(v);
+#endif
+    return kv_void();
 }
 static inline KVal *k_finchart_candle(KVal *hist,KVal *title){
-    int n=(int)hist->list->len;if(!n)return kv_void();
-    int show=n>60?60:n;double mn=1e18,mx=-1e18;
+    const char *t=title->type==KT_STR?title->s:"Candlestick";
+#ifdef _WIN32
+    _kf_show_window(t,hist,"close");
+#else
+    int n=(int)hist->list->len;if(!n)return kv_void();int show=n>60?60:n;double mn=1e18,mx=-1e18;
     for(int i=n-show;i<n;i++){double h=kdict_get(hist->list->items[i]->dict,"high")->f,l=kdict_get(hist->list->items[i]->dict,"low")->f;if(l<mn)mn=l;if(h>mx)mx=h;}
-    int H=12;printf("\n  %s (Candlestick)\n",title->type==KT_STR?title->s:"");
-    for(int row=0;row<H;row++){
-        double lv=mx-(mx-mn)*row/(H-1);printf("  %8.2f |",lv);
-        for(int i=n-show;i<n;i++){
-            double o=kdict_get(hist->list->items[i]->dict,"open")->f,c=kdict_get(hist->list->items[i]->dict,"close")->f;
+    int H=12;printf("\n  %s (Candlestick)\n",t);
+    for(int row=0;row<H;row++){double lv=mx-(mx-mn)*row/(H-1);printf("  %8.2f |",lv);
+        for(int i=n-show;i<n;i++){double o=kdict_get(hist->list->items[i]->dict,"open")->f,c=kdict_get(hist->list->items[i]->dict,"close")->f;
             double h=kdict_get(hist->list->items[i]->dict,"high")->f,l=kdict_get(hist->list->items[i]->dict,"low")->f;
-            double bt=fmax(o,c),bb=fmin(o,c);int bull=c>=o;char ch=' ';
-            if(lv<=h&&lv>=l){if(lv<=bt&&lv>=bb)ch=bull?'|':':';else ch='|';}
-            printf("%c",ch);
-        }
-        printf("\n");
-    }
+            double bt=fmax(o,c),bb=fmin(o,c);int bull=c>=o;char ch=' ';if(lv<=h&&lv>=l){if(lv<=bt&&lv>=bb)ch=bull?'|':':';else ch='|';}printf("%c",ch);}
+        printf("\n");}
     printf("           ");for(int i=0;i<show;i++)printf("-");printf("\n\n");
+#endif
     return kv_void();
 }
 
@@ -279,7 +279,50 @@ static inline KVal *k_finchart_portfolio(KVal *p){
     printf("  Total: $%.2f  PnL: $%.2f (%.1f%%)\n\n",total,k_finport_pnl(p)->f,k_finport_pnl_pct(p)->f);
     return kv_void();
 }
-static inline KVal *k_finchart_show(KVal *c){(void)c;return kv_void();}
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+static HWND _kf_hwnd=NULL;static const char *_kf_title="Chart";static KVal *_kf_data=NULL;static const char *_kf_field="close";
+
+static LRESULT CALLBACK _kf_wndproc(HWND h,UINT m,WPARAM w,LPARAM l){
+    if(m==WM_CLOSE){ShowWindow(h,SW_HIDE);return 0;}
+    if(m==WM_DESTROY){_kf_hwnd=NULL;return 0;}
+    if(m==WM_PAINT&&_kf_data){
+        PAINTSTRUCT ps;HDC hdc=BeginPaint(h,&ps);RECT rc;GetClientRect(h,&rc);
+        int W=rc.right-rc.left,H=rc.bottom-rc.top,mn=rc.top+20,mx=rc.bottom-30,lm=60;
+        HPEN hp=CreatePen(PS_SOLID,1,RGB(0,120,215));SelectObject(hdc,hp);
+        int n=(int)_kf_data->list->len;if(n>1){double dmin=1e18,dmax=-1e18;double *v=(double*)malloc(n*sizeof(double));
+        for(int i=0;i<n;i++){v[i]=kdict_get(_kf_data->list->items[i]->dict,_kf_field)->f;if(v[i]<dmin)dmin=v[i];if(v[i]>dmax)dmax=v[i];}
+        double dr=dmax-dmin>1e-10?dmax-dmin:1;MoveToEx(hdc,lm+n>1?(int)(lm+(W-lm-10)*0/(n-1)):lm,(int)(mx-(v[0]-dmin)/dr*(mx-mn)),NULL);
+        for(int i=1;i<n;i++){int px=lm+(W-lm-10)*i/(n-1),py=mx-(int)((v[i]-dmin)/dr*(mx-mn));LineTo(hdc,px,py);}
+        free(v);}DeleteObject(hp);
+        SetTextColor(hdc,RGB(0,0,0));TextOutA(hdc,5,5,_kf_title,(int)strlen(_kf_title));
+        EndPaint(h,&ps);return 0;
+    }
+    return DefWindowProc(h,m,w,l);
+}
+
+static void _kf_show_window(const char *title,KVal *data,const char *field){
+    HINSTANCE hi=GetModuleHandle(NULL);
+    if(!_kf_hwnd||!IsWindow(_kf_hwnd)){
+        WNDCLASSEX wc={0};wc.cbSize=sizeof(WNDCLASSEX);wc.lpfnWndProc=_kf_wndproc;
+        wc.hInstance=hi;wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
+        wc.lpszClassName="KatlansChart";RegisterClassEx(&wc);
+        _kf_hwnd=CreateWindowEx(0,"KatlansChart",title,WS_OVERLAPPEDWINDOW|WS_VISIBLE,
+            CW_USEDEFAULT,CW_USEDEFAULT,700,450,NULL,NULL,hi,NULL);
+    }
+    _kf_title=title;_kf_data=data;_kf_field=field;
+    if(_kf_hwnd){SetWindowText(_kf_hwnd,title);ShowWindow(_kf_hwnd,SW_SHOW);InvalidateRect(_kf_hwnd,NULL,TRUE);}
+}
+#endif
+
+static inline KVal *k_finchart_show(KVal *c){
+    (void)c;
+    #ifdef _WIN32
+    if(_kf_hwnd){ShowWindow(_kf_hwnd,SW_SHOW);SetForegroundWindow(_kf_hwnd);}
+    #endif
+    return kv_void();
+}
 static inline KVal *k_finchart_save(KVal *c,KVal *p){(void)c;(void)p;return kv_void();}
 static inline KVal *k_finchart_compare(KVal *l,KVal *p){(void)l;(void)p;return kv_void();}
 

@@ -1,0 +1,22 @@
+~ ── VIS Module Test ─────────────────────────────────────────────
+display "=== VIS Module Test ===" ::
+
+~ 1. Image Creation and Reading
+frame = visframe_blank(640, 480) ::
+display "Created blank frame:" ::
+display visframe_size(frame) ::
+
+~ 2. Image Processing
+visframe_blur <frame, 5> ::
+visframe_threshold <frame, 127, "binary"> ::
+visframe_equalize <frame> ::
+visframe_flip <frame, "h"> ::
+visframe_rotate <frame, 90> ::
+visframe_crop <frame, 10, 10, 100, 100> ::
+visframe_edges_canny <frame, 100, 200> ::
+
+hist = visframe_histogram(frame) ::
+display "Histogram calculated length:" ::
+display len(hist) ::
+
+display "VIS Tests Complete!" ::
